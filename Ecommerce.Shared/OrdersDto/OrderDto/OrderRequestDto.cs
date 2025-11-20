@@ -1,7 +1,6 @@
-﻿
-using Ecommerce.Shared.Entities;
+﻿using Ecommerce.Shared.Entities;
 
-namespace Ecommerce.Shared.OrdersDto
+namespace Ecommerce.Shared.OrdersDto.OrderDto
 {
     public record OrderRequestDto
     {
