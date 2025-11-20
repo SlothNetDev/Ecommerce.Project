@@ -1,4 +1,4 @@
-﻿using Ecommerce.Shared.OrdersDto;
+﻿using Ecommerce.Shared.OrdersDto.OrderDto;
 using FluentValidation;
 using System;
 using System.Collections.Generic;
@@ -21,8 +21,6 @@ namespace Ecommerce.Core.Domain.Validations.OrderValidation.OrdersValidation
                 .WithMessage("Total AmountTotal Amount must be greater than zero.")
                 .LessThanOrEqualTo(1_000_000_000)
                 .WithMessage("Total Amount cannot exceed 10 digits");
-
-
 
 
         }
