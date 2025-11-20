@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ecommerce.Shared.OrdersDto
+namespace Ecommerce.Shared.OrdersDto.OrderDto
 {
-    public class OrderUpdateDto
+    public record OrderUpdateDto
     {
         public Guid Id { get; init; }
         public Status? Status { get; init; } // Pending, Confirmed, Shipped, Delivered, Cancelled
