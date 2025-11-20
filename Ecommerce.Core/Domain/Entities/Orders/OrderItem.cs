@@ -14,6 +14,7 @@ namespace Ecommerce.Core.Domain.Entities.Orders
         public Guid ProductId { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; } // Snapshot at time of order
+        public string Status { get; set; } = "Pending"; // Pending, Shipped, Delivered, Cancelled
         
         // Navigation
         public virtual Order Order { get; set; } = null!;
