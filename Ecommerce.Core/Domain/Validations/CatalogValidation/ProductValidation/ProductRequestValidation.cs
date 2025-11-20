@@ -5,12 +5,14 @@ namespace Ecommerce.Core.Domain.Validations.CatalogValidation.ProductValidation
 {
     internal class ProductRequestValidation : AbstractValidator<ProductRequestDto>
     {
-        protected ProductRequestValidation()
+        public ProductRequestValidation()
         {
+            // --- Rule for Name ---
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Product name is required.")
                 .MaximumLength(150).WithMessage("Product name must not exceed 150 characters.");
 
+            // --- Rule for Description ---
             RuleFor(x => x.Description)
                 .MaximumLength(1000).WithMessage("Product description must not exceed 1000 characters.");
 
