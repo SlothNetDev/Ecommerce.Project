@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Http;
 
 namespace Ecommerce.Shared.CatalogDto.Product
 {
-    public class ProductUpdateRequestDto
+    public record ProductUpdateRequestDto
     {
-         public Guid Id { get; set; }
-         public string? Name { get; set; } = string.Empty;
-         public string? Description { get; set; }
-         public decimal Price { get; set; }
-         public int StockQuantity { get; set; }
-         public IFormFile? ImageUrl { get; set; }
+         public Guid Id { get; init; }
+         public string? Name { get; init; } = string.Empty;
+         public string? Description { get; init; }
+         public decimal Price { get; init; }
+         public int StockQuantity { get; init; }
+         public IFormFile? ImageUrl { get; init; }
     }
 }
