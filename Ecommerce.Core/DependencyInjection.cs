@@ -1,4 +1,9 @@
 ﻿using Ecommerce.Core.Domain.Validations.CatalogValidation.CategoryValidation;
+using Ecommerce.Core.Domain.Validations.CatalogValidation.ProductValidation;
+using Ecommerce.Core.Domain.Validations.OrderValidation.OrderItem;
+using Ecommerce.Core.Domain.Validations.OrderValidation.OrderItemValidation;
+using Ecommerce.Core.Domain.Validations.OrderValidation.OrdersValidation;
+using Ecommerce.Core.Domain.Validations.Reviews;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,8 +20,24 @@ namespace Ecommerce.Core
             //Category Validation
             services.AddValidatorsFromAssemblyContaining<CategoryRequestValidation>();
             services.AddValidatorsFromAssemblyContaining<CategoryUpdateValidation>();
+
+            services.AddValidatorsFromAssemblyContaining<ProductRequestValidation>();
+            services.AddValidatorsFromAssemblyContaining<ProductUpdateValidation>();
             #endregion
 
+            #region
+            //Order Validation
+            services.AddValidatorsFromAssemblyContaining<OrderItemRequestValidation>();
+            services.AddValidatorsFromAssemblyContaining<StatusUpdateBySellerValidation>();
+
+            services.AddValidatorsFromAssemblyContaining<OrderItemRequestValidation>();
+            services.AddValidatorsFromAssemblyContaining<OrderUpdateValidation>();
+            #endregion
+
+            #region
+            //Reviews Validation
+            services.AddValidatorsFromAssemblyContaining<ReviewRequestValidation>();
+            #endregion
             return services;
         }
     }
