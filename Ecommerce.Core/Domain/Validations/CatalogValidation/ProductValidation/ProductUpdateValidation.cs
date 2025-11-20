@@ -7,6 +7,11 @@ namespace Ecommerce.Core.Domain.Validations.CatalogValidation.ProductValidation
     {
         protected ProductUpdateValidation()
         {
+            // --- Rule for Id ---
+            RuleFor(x => x.Id)
+                .NotEmpty().WithMessage("Product ID is required.")
+                .Must(id => id != Guid.Empty).WithMessage("Product ID must be a valid GUID.");
+
             // --- Rule for Name ---
             RuleFor(x => x.Name)
                 .MaximumLength(150).WithMessage("Product name must not exceed 150 characters.");
