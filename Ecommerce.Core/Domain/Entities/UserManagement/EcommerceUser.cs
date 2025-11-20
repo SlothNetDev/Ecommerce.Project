@@ -1,6 +1,4 @@
-﻿using Ecommerce.Core.Domain.Entities.Orders;
-using Ecommerce.Core.Domain.Entities.Reviews;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ecommerce.Core.Domain.Entities.UserManagement
 {
-    public class User
+    public class EcommerceUser
     {
          public Guid Id { get; set; }
          public string Email { get; set; } = string.Empty;
@@ -18,9 +16,5 @@ namespace Ecommerce.Core.Domain.Entities.UserManagement
          public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
          public DateTime? UpdatedAt { get; set; }
          public bool IsActive { get; set; } = true;
-
-         // Navigation properties
-         public  ICollection<Order> Orders { get; set; } = new List<Order>();
-         public  ICollection<Review> Reviews { get; set; } = new List<Review>();
     }
 }
