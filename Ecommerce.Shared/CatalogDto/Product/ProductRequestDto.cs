@@ -4,10 +4,10 @@ namespace Ecommerce.Shared.CatalogDto.Product
 {
     public class ProductRequestDto
     {
-         public string Name { get; set; } = string.Empty;
-         public string? Description { get; set; }
-         public decimal Price { get; set; }
-         public int StockQuantity { get; set; }
-         public IFormFile? Image { get; set; } 
+         public string Name { get; init; } = string.Empty;
+         public string? Description { get; init; }
+         public decimal Price { get; init; }
+         public int StockQuantity { get; init; }
+         public IFormFile? Image { get; init; } 
     }
 }
