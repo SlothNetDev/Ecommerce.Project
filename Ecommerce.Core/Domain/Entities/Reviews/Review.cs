@@ -18,7 +18,7 @@ namespace Ecommerce.Core.Domain.Entities.Reviews
          public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
          
          // Navigation
-         public virtual Product Product { get; set; } = null!;
-         public virtual User User { get; set; } = null!;
+         public  Product Product { get; set; } = null!;
+         public  User User { get; set; } = null!;
     }
 }
