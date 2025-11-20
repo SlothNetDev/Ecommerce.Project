@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ecommerce.Core.Domain.Entities.UserManagement
 {
-    public class EcommerceUser
+    public class User
     {
          public Guid Id { get; set; }
          public string Email { get; set; } = string.Empty;
