@@ -1,13 +1,13 @@
-﻿using Ecommerce.Shared.OrdersDto;
+﻿using Ecommerce.Shared.OrdersDto.OrderDto;
 using FluentValidation;
 
 namespace Ecommerce.Core.Domain.Validations.OrderValidation.OrdersValidation
 {
     public class OrderRequestValidation : AbstractValidator<OrderRequestDto>
     {
-        protected OrderRequestValidation()
+        public OrderRequestValidation()
         {
-           // --- Rule for Price ---
+           // --- Rule for Total Amount ---
             RuleFor(product => product.TotalAmount)
                 .NotEmpty().WithMessage("Total Amount Price is required.")
                 .GreaterThan(0).WithMessage("Total AmountTotal Amount must be greater than zero.")
