@@ -10,6 +10,7 @@ namespace Ecommerce.Shared.OrdersDto.OrderItemDto
     {
         public Guid Id { get; init; }
         public int Quantity { get; init; }
+        public string Status { get; set; }
         public decimal UnitPrice { get; init; }
     }
 }
