@@ -8,6 +8,6 @@ namespace Ecommerce.Shared.CatalogDto.Product
          public string? Description { get; init; }
          public decimal Price { get; init; }
          public int StockQuantity { get; init; }
-         public IFormFile? Image { get; init; } 
+         public IFormFile Image { get; init; } 
     }
 }
