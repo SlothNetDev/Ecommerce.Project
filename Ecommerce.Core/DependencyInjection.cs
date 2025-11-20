@@ -27,10 +27,9 @@ namespace Ecommerce.Core
 
             #region
             //Order Validation
-            services.AddValidatorsFromAssemblyContaining<OrderItemRequestValidation>();
             services.AddValidatorsFromAssemblyContaining<StatusUpdateBySellerValidation>();
 
-            services.AddValidatorsFromAssemblyContaining<OrderItemRequestValidation>();
+            services.AddValidatorsFromAssemblyContaining<OrderRequestValidation>();
             services.AddValidatorsFromAssemblyContaining<OrderUpdateValidation>();
             #endregion
 
