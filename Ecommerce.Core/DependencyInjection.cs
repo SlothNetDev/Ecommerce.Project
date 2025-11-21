@@ -1,6 +1,5 @@
 ﻿using Ecommerce.Core.Domain.Validations.CatalogValidation.CategoryValidation;
 using Ecommerce.Core.Domain.Validations.CatalogValidation.ProductValidation;
-using Ecommerce.Core.Domain.Validations.OrderValidation.OrderItem;
 using Ecommerce.Core.Domain.Validations.OrderValidation.OrderItemValidation;
 using Ecommerce.Core.Domain.Validations.OrderValidation.OrdersValidation;
 using Ecommerce.Core.Domain.Validations.Reviews;
@@ -27,7 +26,7 @@ namespace Ecommerce.Core
 
             #region
             //Order Validation
-            services.AddValidatorsFromAssemblyContaining<StatusUpdateBySellerValidation>();
+            services.AddValidatorsFromAssemblyContaining<StatusUpdateBySellerValidation>(); 
 
             services.AddValidatorsFromAssemblyContaining<OrderRequestValidation>();
             services.AddValidatorsFromAssemblyContaining<OrderUpdateValidation>();
