@@ -29,11 +29,13 @@ namespace Ecommerce.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<Guid?>("ParentCategoryId")
                         .HasColumnType("uniqueidentifier");
@@ -47,7 +49,7 @@ namespace Ecommerce.Infrastructure.Migrations
 
                     b.HasIndex("SellerId");
 
-                    b.ToTable("Category");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("Ecommerce.Core.Domain.Entities.Catalog.Product", b =>
@@ -63,9 +65,12 @@ namespace Ecommerce.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(1048576)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
@@ -73,7 +78,8 @@ namespace Ecommerce.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -90,7 +96,7 @@ namespace Ecommerce.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Product");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("Ecommerce.Core.Domain.Entities.Orders.Order", b =>
@@ -104,9 +110,11 @@ namespace Ecommerce.Infrastructure.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("UserId")
@@ -116,7 +124,10 @@ namespace Ecommerce.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Order");
+                    b.ToTable("Order Table", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_YourEntity_Status", "[Status] IN ('Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled')");
+                        });
                 });
 
             modelBuilder.Entity("Ecommerce.Core.Domain.Entities.Orders.OrderItem", b =>
@@ -136,7 +147,8 @@ namespace Ecommerce.Infrastructure.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
@@ -147,7 +159,11 @@ namespace Ecommerce.Infrastructure.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderItem");
+                    b.ToTable("Order_Items", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_YourEntity_Status", "[Status] IN ('Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled')")
+                                .HasName("CK_YourEntity_Status1");
+                        });
                 });
 
             modelBuilder.Entity("Ecommerce.Core.Domain.Entities.Reviews.Review", b =>
@@ -158,7 +174,8 @@ namespace Ecommerce.Infrastructure.Migrations
 
                     b.Property<string>("Comment")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -178,7 +195,10 @@ namespace Ecommerce.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Review");
+                    b.ToTable("Review", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Reviews_Rating", "[Rating] >= 1 AND [Rating] <= 5");
+                        });
                 });
 
             modelBuilder.Entity("Ecommerce.Core.Domain.Entities.UserManagement.User", b =>
@@ -436,11 +456,13 @@ namespace Ecommerce.Infrastructure.Migrations
                 {
                     b.HasOne("Ecommerce.Core.Domain.Entities.Catalog.Category", "ParentCategory")
                         .WithMany("SubCategories")
-                        .HasForeignKey("ParentCategoryId");
+                        .HasForeignKey("ParentCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Ecommerce.Core.Domain.Entities.UserManagement.User", "Seller")
                         .WithMany("Categories")
-                        .HasForeignKey("SellerId");
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("ParentCategory");
 
