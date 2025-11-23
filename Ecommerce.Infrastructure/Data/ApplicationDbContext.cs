@@ -15,7 +15,7 @@ namespace Ecommerce.Infrastructure.Data
     {
         public virtual DbSet<ApplicationUser> ApplicationUsersDb { get; set; } = null!;
         public virtual DbSet<Category> CategoriesDb { get; set; } = null!;
-        public virtual DbSet<Product> ApplicationRolesDb { get; set; } = null!;
+        public virtual DbSet<Product> ProductsDb { get; set; } = null!;
         public virtual DbSet<Order> OrderDb { get; set; } = null!;
         public virtual DbSet<OrderItem> OrderItemDb { get; set; } = null!;
         public virtual DbSet<Review> ReviewDb { get; set; } = null!;

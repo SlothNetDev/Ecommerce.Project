@@ -11,7 +11,7 @@ namespace Ecommerce.Core.Domain.Entities.UserManagement
 {
     public class User
     {
-         public Guid UserId { get; set; }
+         public Guid UserId { get; set; } = Guid.NewGuid();
         
          public bool IsActive { get; set; } = true;
 
