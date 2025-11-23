@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Ecommerce.Infrastructure.Identity.Entities
 {
-    internal class ApplicationRole : IdentityRole<Guid>
+    public class ApplicationRole : IdentityRole<Guid>
     {
         //provide roles
         public string Description { get; set; } = string.Empty;
