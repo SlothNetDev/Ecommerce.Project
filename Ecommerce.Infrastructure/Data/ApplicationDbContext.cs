@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce.Infrastructure.Data
 {
-    internal class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser,ApplicationRole, Guid>(options)     
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>(options)
     { 
         public virtual DbSet<ApplicationUser> ApplicationUsers { get; set; } = null!;
         
