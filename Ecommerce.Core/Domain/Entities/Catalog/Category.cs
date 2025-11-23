@@ -9,7 +9,7 @@ namespace Ecommerce.Core.Domain.Entities.Catalog
 {
     public class Category
     {
-        public Guid CategoryId { get; set; }
+        public Guid CategoryId { get; set; } = Guid.NewGuid();
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
 
