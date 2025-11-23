@@ -10,7 +10,7 @@ namespace Ecommerce.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CategoryController(ApplicationDbContext dbContext) : ControllerBase
+    public class CategoriesController(ApplicationDbContext dbContext) : ControllerBase
     {
         // GET: api/<CategoryController>
         [HttpGet]
