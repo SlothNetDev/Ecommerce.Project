@@ -9,7 +9,7 @@ namespace Ecommerce.Core.Domain.Entities.Orders
 {
     public class Order
     {
-         public Guid Id { get; set; }
+         public Guid Id { get; set; } = Guid.NewGuid();
          public Guid UserId { get; set; }
          public string Status { get; set; } = "Pending"; // Pending, Confirmed, Shipped, Delivered, Cancelled
          public decimal TotalAmount { get; set; }
