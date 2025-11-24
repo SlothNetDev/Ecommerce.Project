@@ -51,6 +51,8 @@ namespace Ecommerce.Api
             }
 
             
+            app.MapControllers();
+            
             app.Run();
         }
     }
