@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ecommerce.Shared.OrdersDto.OrderDto
 {
-    internal record OrderResponseDto
+    public record OrderResponseDto
     {
          public Guid Id { get; init; }
          public string Status { get; init; }
