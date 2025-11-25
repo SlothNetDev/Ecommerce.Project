@@ -1,3 +1,4 @@
+using Ecommerce.Api.Middleware;
 using Ecommerce.Core;
 using Ecommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -30,13 +31,26 @@ namespace Ecommerce.Api
             });
             //use the validation
             builder.Services.AddInfrastructure();
-
-            //Add sql
-            builder.Services.AddDbContext<ApplicationDbContext>(temp =>
+            
+            builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
             {
-                temp.UseSqlServer(builder
-                    .Configuration.GetConnectionString("EcommerceDbConnection"));
+                var env = serviceProvider.GetRequiredService<IHostEnvironment>();
+                var config = serviceProvider.GetRequiredService<IConfiguration>();
+                
+                Console.WriteLine($"Environment in AddPresentationService: {env.EnvironmentName}");
+                
+                if (env.IsEnvironment("Testing"))
+                {
+                    Console.WriteLine("Using InMemoryDatabase for Testing");
+                    options.UseInMemoryDatabase("InMemoryDbForTesting");
+                }
+                else
+                {
+                    Console.WriteLine("Using SQL Server for Production");
+                    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceDbConnection"));
+                }
             });
+
             var app = builder.Build();
             
             // Configure the HTTP request pipeline.
@@ -49,8 +63,12 @@ namespace Ecommerce.Api
                     options.RoutePrefix = "api-docs"; // Optional: Changes the URL from /swagger to /api-docs
                 });
             }
-
             
+            //adding global middleware
+            app.UseMiddleware<MiddlewareException>();
+            
+            app.UseAuthentication(); // Note: This should come BEFORE UseAuthorization
+            app.UseAuthorization();
             app.MapControllers();
             
             app.Run();
