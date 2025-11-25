@@ -3,4 +3,5 @@
   <Project Path="Ecommerce.Core/Ecommerce.Core.csproj" />
   <Project Path="Ecommerce.Infrastructure/Ecommerce.Infrastructure.csproj" />
   <Project Path="Ecommerce.Shared/Ecommerce.Shared.csproj" />
+  <Project Path="Ecommerce.Test\Ecommerce.Test.csproj" Type="Classic C#" />
 </Solution>
