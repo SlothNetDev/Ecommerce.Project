@@ -19,6 +19,6 @@ namespace Ecommerce.Infrastructure.Identity.Entities
         public User DomainUser { get; set; } = null!;
 
         //Add refresh token to track all active/Inactive refresh tokens
-      /*  public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();*/
+        public ICollection<ApplicationToken> RefreshTokens { get; set; } = new List<ApplicationToken>();
     }
 }
