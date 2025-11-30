@@ -19,7 +19,7 @@ namespace Ecommerce.Test.TestUtilities;
 ///Pre-seeds Data: Automatically creates roles and test users
 /// </summary>
 /// <typeparam name="TProgram"></typeparam>
-public abstract class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProgram> where TProgram : class
+public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProgram> where TProgram : class
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
