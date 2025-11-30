@@ -21,7 +21,9 @@ namespace Ecommerce.Infrastructure.Data.Configuration.Orders
 
             builder.HasKey(oi => oi.Id);
 
-      
+            builder.Property(x => x.UnitPrice).HasColumnType("decimal(18,2)");
+            
+            
             builder.Property(x => x.Status)
                 .HasMaxLength(10);
         }
