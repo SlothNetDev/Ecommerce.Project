@@ -20,8 +20,4 @@ public interface IRefreshTokenService
     /// <returns>List of Account RefreshToken</returns>
     Task<ResponseType<List<RefreshTokenResponseDto>>> GetRefreshTokenAsync(Guid userId);
 
-    /// <summary>
-    /// Logs the user out by revoking the refresh token.
-    /// </summary>
-    Task<ResponseType<string>> LogoutAsync(LogOutRequestDto dto);
 }
