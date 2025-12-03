@@ -8,10 +8,10 @@ namespace Ecommerce.Core.Application.Common.Interfaces;
 public interface IRefreshTokenService
 {
     RefreshTokenResponseDto GenerateRefreshToken(string userId, string ipAddress);
-    Task SaveRefreshTokenAsync(ApplicationTokenDto token);
-    Task<ResponseType<RefreshTokenResponseDto>> GetStoredTokenAsync(string refreshToken);
-    Task<string> RevokeTokenAsync(string refreshToken,string ipAdress,string revocationReason, string? replacedByToken = null);
-    Task<RefreshTokenResponseDto> RotateTokenAsync(ApplicationTokenDto oldToken, string ipAddress, string revokedReason);
-    Task<bool> IsTokenValidAsync(ApplicationTokenDto token);
+    Task SaveRefreshTokenAsync(RefreshTokenResponseDto token);
+    Task<RefreshTokenResponseDto> GetStoredTokenAsync(string refreshToken);
+    Task RevokeTokenAsync(string refreshToken, string reason, string? replacedByToken = null);
+    Task<RefreshTokenResponseDto> RotateTokenAsync(RefreshTokenResponseDto oldToken, string ipAddress);
+    Task<bool> IsTokenValidAsync(RefreshTokenResponseDto token);
 
 }
