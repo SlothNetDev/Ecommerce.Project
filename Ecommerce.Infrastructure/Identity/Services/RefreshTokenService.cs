@@ -62,7 +62,7 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
     public async Task<ResponseType<RefreshTokenResponseDto>> GetStoredTokenAsync(string refreshToken)
     {
         var entity = await dbContext.RefreshToken.
-            FirstOrDefaultAsync(x => x.TokenId == refreshToken);
+            FirstOrDefaultAsync(x => x.Token == refreshToken);
         if (entity == null)
             return ResponseType<RefreshTokenResponseDto>.Fail("Refresh token not found");
         
@@ -84,7 +84,7 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
     public async Task<string> RevokeTokenAsync(string refreshToken, string reason, string? replacedByToken = null)
     {
         var entity = await dbContext.RefreshToken
-            .FirstOrDefaultAsync(x => x.TokenId == refreshToken);
+            .FirstOrDefaultAsync(x => x.Token == refreshToken);
         
         if(entity == null)
             return "Refresh token not found";
@@ -100,7 +100,7 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
     {
         logger.LogInformation("-----Rotating token-------\n");
         //revoke old token
-       await RevokeTokenAsync(oldToken.TokenId, ipAddress);
+       await RevokeTokenAsync(oldToken.Token, ipAddress);
        
        //create new token
         var newToken = GenerateRefreshToken(oldToken.TokenId, ipAddress);
