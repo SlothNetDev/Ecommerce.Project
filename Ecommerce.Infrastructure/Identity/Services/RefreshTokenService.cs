@@ -95,15 +95,15 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
         await dbContext.SaveChangesAsync();
         return "Refresh token revoked Successfully";
     }
-
-    public async Task<RefreshTokenResponseDto> RotateTokenAsync(ApplicationTokenDto oldToken, string ipAddress)
+    
+    public async Task<RefreshTokenResponseDto> RotateTokenAsync(ApplicationTokenDto oldToken,string reason,  string ipAddress)
     {
         logger.LogInformation("-----Rotating token-------\n");
         //revoke old token
-       await RevokeTokenAsync(oldToken.Token, ipAddress);
+       await RevokeTokenAsync(oldToken.Token,reason, ipAddress);
        
        //create new token
-        var newToken = GenerateRefreshToken(oldToken.TokenId, ipAddress);
+        var newToken = GenerateRefreshToken(oldToken.UserId.ToString(), ipAddress);
         
         await SaveRefreshTokenAsync(new ApplicationTokenDto()
         {
