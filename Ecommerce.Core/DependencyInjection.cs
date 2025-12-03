@@ -6,6 +6,7 @@ using Ecommerce.Core.Domain.Validations.Reviews;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
+
 namespace Ecommerce.Core
 {
     /// <summary>
