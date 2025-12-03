@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <Folder Include="Data\Repository\" />
+    <Folder Include="Identity\Interface\" />
   </ItemGroup>
 
 </Project>

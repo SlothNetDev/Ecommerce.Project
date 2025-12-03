@@ -21,5 +21,6 @@ public record RefreshTokenResponseDto(
     string? CreatedByIp,
     DateTime? Revoked,
     string? RevokedByIp,
-    bool IsActive
+    bool IsActive,
+    string? RevocationReason
 );

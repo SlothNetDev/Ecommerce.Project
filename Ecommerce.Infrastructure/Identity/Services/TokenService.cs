@@ -8,6 +8,7 @@ using Ecommerce.Shared.AuthenticationDTO;
 using Ecommerce.Shared.TokenDTO;
 using Ecommerce.Shared.Wrapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -16,9 +17,11 @@ namespace Ecommerce.Infrastructure.Identity.Services;
 public class TokenService : ITokenService
 {
     private readonly JwtSettings  _jwtSettings;
-    public TokenService(IOptions<JwtSettings> jwtSettings)
+    private readonly ILogger<TokenService> _logger;
+    public TokenService(IOptions<JwtSettings> jwtSettings,  ILogger<TokenService> logger)
     {
         _jwtSettings = jwtSettings.Value;
+        _logger = logger;
     }
     public string CreateJwtToken(IEnumerable<Claim> claims)
     {
@@ -60,6 +63,7 @@ public class TokenService : ITokenService
         //add roles
         if (user.Roles != null)
         {
+            _logger.LogInformation("Creating roles Claims");
             claims.AddRange(
                 user.Roles.Select(role => new Claim("role", role)));
         }
