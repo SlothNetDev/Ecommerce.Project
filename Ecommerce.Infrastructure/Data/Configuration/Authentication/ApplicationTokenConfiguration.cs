@@ -11,7 +11,7 @@ public class ApplicationTokenConfiguration :IEntityTypeConfiguration<Application
     {
         builder.ToTable("RefrehTokens");
         
-        builder.HasKey(x => x.Id);
+        builder.HasKey(x => x.TokenId);
         
         builder.HasOne(x => x.User)
             .WithMany(x => x.RefreshTokens)
