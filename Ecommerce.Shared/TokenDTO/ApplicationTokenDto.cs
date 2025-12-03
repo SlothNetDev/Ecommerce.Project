@@ -17,4 +17,6 @@ public record ApplicationTokenDto
     public bool IsActive => Revoked == null && !IsExpired; //returns true if both was true return true
     // Add reason for revocation
     public string? RevocationReason { get; init; } // "UserLogout", "SuspiciousActivity", etc.
+    
+    public Guid UserId { get; set; }
 }
