@@ -1,3 +1,4 @@
+
 using Ecommerce.Shared.AuthenticationDTO;
 using Ecommerce.Shared.TokenDTO;
 using Ecommerce.Shared.Wrapper;
@@ -6,18 +7,11 @@ namespace Ecommerce.Core.Application.Common.Interfaces;
 
 public interface IRefreshTokenService
 {
-    /// <summary>
-    /// Generating Refresh Token for an Account
-    /// </summary>
-    /// <param name="token"></param>
-    /// <param name="refreshToken"></param>
-    /// <returns>AuthResponseDto </returns>
-    Task<ResponseType<RefreshTokenResponseDto>> RefreshTokenAsync(string token, string refreshToken);
-    /// <summary>
-    /// Get all RefreshToken of Accounts
-    /// </summary>
-    /// <param name="userId"></param>
-    /// <returns>List of Account RefreshToken</returns>
-    Task<ResponseType<List<RefreshTokenResponseDto>>> GetRefreshTokenAsync(Guid userId);
+    RefreshTokenResponseDto GenerateRefreshToken(string userId, string ipAddress);
+    Task SaveRefreshTokenAsync(RefreshTokenResponseDto token);
+    Task<RefreshTokenResponseDto> GetStoredTokenAsync(string refreshToken);
+    Task RevokeTokenAsync(string refreshToken, string reason, string? replacedByToken = null);
+    Task<RefreshTokenResponseDto> RotateTokenAsync(RefreshTokenResponseDto oldToken, string ipAddress);
+    Task<bool> IsTokenValidAsync(RefreshTokenResponseDto token);
 
 }
