@@ -2,7 +2,7 @@ namespace Ecommerce.Infrastructure.Identity.Entities;
 
 public class ApplicationToken
 {
-    public string UserId { get; set; } // Primary key
+    public string TokenId { get; set; } // Primary key
     public string Token { get; set; } = string.Empty; // Actual refresh token string
     public DateTime Expires { get; set; } // Expiration date
     public bool IsExpired => DateTime.UtcNow >= Expires; //expression embodied property
