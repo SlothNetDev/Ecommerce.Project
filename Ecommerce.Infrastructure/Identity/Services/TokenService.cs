@@ -8,37 +8,38 @@ using Ecommerce.Shared.AuthenticationDTO;
 using Ecommerce.Shared.TokenDTO;
 using Ecommerce.Shared.Wrapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Ecommerce.Infrastructure.Identity.Services;
 
-public class TokenService : ITokenService
+public class TokenService(IOptions<JwtSettings> jwtSettings, 
+    ILogger<TokenService> logger)
+    : ITokenService
 {
-    private readonly JwtSettings  _jwtSettings;
-    public TokenService(IOptions<JwtSettings> jwtSettings)
-    {
-        _jwtSettings = jwtSettings.Value;
-    }
+    
     public string CreateJwtToken(IEnumerable<Claim> claims)
     {
+        logger.LogInformation("Creating JWT Token");
         var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_jwtSettings.Key));
-        
+            Encoding.UTF8.GetBytes(jwtSettings.Value.Key));
+       
         //Cryptographic algorithm that ensures token integrity
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
+        
         //create JWT token
         var jwt = new JwtSecurityToken(
-            issuer: _jwtSettings.Issuer,
-            audience: _jwtSettings.Audience,
+            issuer: jwtSettings.Value.Issuer,
+            audience: jwtSettings.Value.Audience,
             claims: claims,
-            expires: DateTime.Now.AddMinutes(_jwtSettings.ExpiryMinutes),
+            expires: DateTime.Now.AddMinutes(jwtSettings.Value.ExpiryMinutes),
             signingCredentials: creds
         );
 
         //Converts the JWT object into a compact string format
         // Result is a base64-encoded string that can be sent in HTTP headers
+        logger.LogInformation("JWT Token created successfully");
         return new JwtSecurityTokenHandler().WriteToken(jwt);
     }
 
