@@ -13,7 +13,7 @@ namespace Ecommerce.Shared.TokenDTO;
 /// <param name="RevokedByIp"></param>
 /// <param name="IsActive"></param>
 public record RefreshTokenResponseDto(
-    string Id,
+    string TokenId,
     string Token, //this includes token
     DateTime Expires,
     bool? IsExpired,
