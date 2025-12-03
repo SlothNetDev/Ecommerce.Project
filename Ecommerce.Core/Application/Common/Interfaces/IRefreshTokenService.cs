@@ -11,7 +11,7 @@ public interface IRefreshTokenService
     Task SaveRefreshTokenAsync(ApplicationTokenDto token);
     Task<ResponseType<RefreshTokenResponseDto>> GetStoredTokenAsync(string refreshToken);
     Task<string> RevokeTokenAsync(string refreshToken, string reason, string? replacedByToken = null);
-    Task<RefreshTokenResponseDto> RotateTokenAsync(ApplicationTokenDto oldToken, string ipAddress);
+    Task<RefreshTokenResponseDto> RotateTokenAsync(ApplicationTokenDto oldToken, string reason,string ipAddress);
     Task<bool> IsTokenValidAsync(ApplicationTokenDto token);
 
 }
