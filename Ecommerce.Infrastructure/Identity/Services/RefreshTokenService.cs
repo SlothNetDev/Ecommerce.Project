@@ -6,10 +6,12 @@ using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Shared.TokenDTO;
 using Ecommerce.Shared.Wrapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Ecommerce.Infrastructure.Identity.Services;
 
-public class RefreshTokenService(ApplicationDbContext dbContext) :IRefreshTokenService
+public class RefreshTokenService(ApplicationDbContext dbContext,
+    ILogger<RefreshTokenService> logger) :IRefreshTokenService
 {
     public RefreshTokenResponseDto GenerateRefreshToken(string userId, string ipAddress)
     {
@@ -22,7 +24,8 @@ public class RefreshTokenService(ApplicationDbContext dbContext) :IRefreshTokenS
             CreatedByIp = ipAddress,
             UserId = Guid.Parse(userId),
         };
-
+        
+        logger.LogInformation("Generated refresh token successfully");
         return new RefreshTokenResponseDto(
             TokenId: token.TokenId,
             Token: token.Token,
@@ -52,6 +55,7 @@ public class RefreshTokenService(ApplicationDbContext dbContext) :IRefreshTokenS
         
         await dbContext.RefreshToken.AddAsync(entity);
         
+        logger.LogInformation("Saved refresh token successfully");
         await dbContext.SaveChangesAsync();
     }
 
@@ -63,6 +67,7 @@ public class RefreshTokenService(ApplicationDbContext dbContext) :IRefreshTokenS
         if (entity == null)
             return ResponseType<RefreshTokenResponseDto>.Fail("Refresh token not found");
         
+        logger.LogInformation("Stored refresh token successfully");
         return ResponseType<RefreshTokenResponseDto>.SuccessResult(new RefreshTokenResponseDto(
             TokenId: entity.TokenId,
             Token: entity.Token,
@@ -86,7 +91,7 @@ public class RefreshTokenService(ApplicationDbContext dbContext) :IRefreshTokenS
             return "Refresh token not found";
         
         entity.Revoked = DateTime.UtcNow;
-        entity.RevokedByIp = reason; // store reason field
+        entity.RevocationReason = reason; // store reason field
 
         await dbContext.SaveChangesAsync();
         return "Refresh token revoked Successfully";
