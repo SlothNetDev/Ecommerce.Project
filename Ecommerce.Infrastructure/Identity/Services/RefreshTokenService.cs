@@ -98,33 +98,34 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
        
        await RevokeTokenAsync(refreshToken, ipAddress, revocationReason);
        
-       var newToken = GenerateRefreshToken(existing.Data.UserId.ToString(),ipAddress );
+       var newToken = await GenerateRefreshToken(existing.Data.UserId.ToString(),ipAddress );
 
-       await SaveRefreshTokenAsync(new RefreshTokenResponseDto(TokenId: newToken.TokenId,
-           Token: newToken.Token,
-           UserId: newToken.UserId,
-           Created: newToken.Created,
-           Expires: newToken.Expires,
-           IsExpired: newToken.IsExpired,
-           IsActive: newToken.IsActive,
-           CreatedByIp: newToken.CreatedByIp,
-           Revoked: newToken.Revoked,
-           RevokedByIp: newToken.RevokedByIp,
-           RevocationReason: newToken.RevocationReason
+       await SaveRefreshTokenAsync(new RefreshTokenResponseDto(
+           TokenId: newToken.Data.TokenId,
+           Token: newToken.Data.Token,
+           UserId: newToken.Data.UserId,
+           Created: newToken.Data.Created,
+           Expires: newToken.Data.Expires,
+           IsExpired: newToken.Data.IsExpired,
+           IsActive: newToken.Data.IsActive,
+           CreatedByIp: newToken.Data.CreatedByIp,
+           Revoked: newToken.Data.Revoked,
+           RevokedByIp: newToken.Data.RevokedByIp,
+           RevocationReason: newToken.Data.RevocationReason
        ));
        
        return ResponseType<RefreshTokenResponseDto>.SuccessResult(new RefreshTokenResponseDto(
-            TokenId:  newToken.TokenId,
-            Token:  newToken.Token,
-            UserId:newToken.UserId,
-            Created:newToken.Created,
-            Expires:newToken.Expires,
-            IsExpired:newToken.IsExpired,
-            IsActive:newToken.IsActive,
-            CreatedByIp:newToken.CreatedByIp,
-            Revoked:newToken.Revoked,
-            RevokedByIp:newToken.RevokedByIp,
-            RevocationReason:newToken.RevocationReason
+             TokenId: newToken.Data.TokenId,
+             Token: newToken.Data.Token,
+             UserId: newToken.Data.UserId,
+             Created: newToken.Data.Created,
+             Expires: newToken.Data.Expires,
+             IsExpired: newToken.Data.IsExpired,
+             IsActive: newToken.Data.IsActive,
+             CreatedByIp: newToken.Data.CreatedByIp,
+             Revoked: newToken.Data.Revoked,
+             RevokedByIp: newToken.Data.RevokedByIp,
+             RevocationReason: newToken.Data.RevocationReason
            ),"Refresh token revoked successfully");
     }
     
