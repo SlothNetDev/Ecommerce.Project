@@ -13,7 +13,7 @@ namespace Ecommerce.Infrastructure.Identity.Services;
 public class RefreshTokenService(ApplicationDbContext dbContext,
     ILogger<RefreshTokenService> logger) :IRefreshTokenService
 {
-    public RefreshTokenResponseDto GenerateRefreshToken(string userId, string ipAddress)
+    public async Task<ResponseType<RefreshTokenResponseDto>> GenerateRefreshToken(string userId, string ipAddress)
     {
         var token =  new ApplicationToken()
         {
@@ -26,8 +26,10 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
         };
         
         logger.LogInformation("Refresh token generated for UserId: {UserId}", userId);
-        
-        return MapToResponse(token);
+
+        return await Task.FromResult(
+            ResponseType<RefreshTokenResponseDto>.SuccessResult(MapToResponse(token),
+                "Refresh token generated for UserId"));
     }
     
 
