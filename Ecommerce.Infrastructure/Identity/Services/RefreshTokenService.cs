@@ -66,7 +66,10 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
             "Refresh token retrieved");
     }
 
-    public async Task<string> RevokeTokenAsync(string refreshToken, string reason, string? replacedByToken = null)
+    public async Task<string> RevokeTokenAsync(string refreshToken,
+        string ipAddress,
+        string reason, 
+        string? replacedByToken = null)
     {
         var entity = await dbContext.RefreshToken
             .FirstOrDefaultAsync(x => x.Token == refreshToken);
@@ -81,37 +84,46 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
         return "Refresh token revoked Successfully";
     }
     
-    public async Task<RefreshTokenResponseDto> RotateTokenAsync(
+    public async Task<ResponseType<RefreshTokenResponseDto>> RotateTokenAsync(
         string refreshToken,
         string ipAddress,
         string revocationReason)
     {
-        logger.LogInformation("-----Rotating token-------\n");
-        //revoke old token
-       await RevokeTokenAsync(oldToken.Token,reason, ipAddress);
+       var existing = await GetStoredTokenAsync(refreshToken);
+       if (!existing.Success)
+           return ResponseType<RefreshTokenResponseDto>.Fail(existing.Message ?? "Refresh token not found");
        
-       //create new token
-        var newToken = GenerateRefreshToken(oldToken.UserId.ToString(), ipAddress);
-        
-        await SaveRefreshTokenAsync(new ApplicationTokenDto()
-        {
-            TokenId = newToken.TokenId,
-            Token = newToken.Token,
-            Expires = newToken.Expires,
-            Created = newToken.Created,
-            CreatedByIp = newToken.CreatedByIp,
-            Revoked = newToken.Revoked,
-            RevokedByIp = newToken.RevokedByIp,
-            RevocationReason = newToken.RevocationReason
-        });
-        
-        return newToken;
+       await RevokeTokenAsync(refreshToken, ipAddress, revocationReason);
+       
+       var newToken = GenerateRefreshToken(existing.Data.UserId.ToString(),ipAddress );
+       
+       await SaveAsync(new ApplicationTokenDto()
+       {
+           TokenId = newToken.TokenId,
+           Token = newToken.Token,
+           UserId = newToken.UserId,
+           Created = newToken.Created,
+           Expires = newToken.Expires,
+           CreatedByIp = newToken.CreatedByIp
+       });
+       
+       return ResponseType<RefreshTokenResponseDto>.SuccessResult(new RefreshTokenResponseDto(
+            TokenId:  newToken.TokenId,
+            Token:  newToken.Token,
+            UserId:newToken.UserId,
+            Created:newToken.Created,
+            Expires:newToken.Expires,
+            IsExpired:newToken.IsExpired,
+            IsActive:newToken.IsActive,
+            CreatedByIp:newToken.CreatedByIp,
+            Revoked:newToken.Revoked,
+            RevokedByIp:newToken.RevokedByIp,
+            RevocationReason:newToken.RevocationReason
+           ),"Refresh token revoked successfully");
     }
     
-    public async Task<bool> IsTokenValidAsync(ApplicationTokenDto token) => 
-        await Task.FromResult(token.Revoked == null &&
-        token.Expires > DateTime.UtcNow &&
-        token.IsActive);
+    public async Task<bool> IsTokenValidAsync(ApplicationToken token) => 
+        await Task.FromResult(token.IsActive);
     
     private static RefreshTokenResponseDto MapToResponse(ApplicationToken token)
         => new(
