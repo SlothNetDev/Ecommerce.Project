@@ -29,8 +29,9 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
         
         return MapToResponse(token);
     }
+    
 
-    public async Task SaveAsync(ApplicationTokenDto dto)
+    public async Task SaveRefreshTokenAsync(RefreshTokenResponseDto dto)
     {
         var entity = new ApplicationToken
         {
@@ -96,16 +97,19 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
        await RevokeTokenAsync(refreshToken, ipAddress, revocationReason);
        
        var newToken = GenerateRefreshToken(existing.Data.UserId.ToString(),ipAddress );
-       
-       await SaveAsync(new ApplicationTokenDto()
-       {
-           TokenId = newToken.TokenId,
-           Token = newToken.Token,
-           UserId = newToken.UserId,
-           Created = newToken.Created,
-           Expires = newToken.Expires,
-           CreatedByIp = newToken.CreatedByIp
-       });
+
+       await SaveRefreshTokenAsync(new RefreshTokenResponseDto(TokenId: newToken.TokenId,
+           Token: newToken.Token,
+           UserId: newToken.UserId,
+           Created: newToken.Created,
+           Expires: newToken.Expires,
+           IsExpired: newToken.IsExpired,
+           IsActive: newToken.IsActive,
+           CreatedByIp: newToken.CreatedByIp,
+           Revoked: newToken.Revoked,
+           RevokedByIp: newToken.RevokedByIp,
+           RevocationReason: newToken.RevocationReason
+       ));
        
        return ResponseType<RefreshTokenResponseDto>.SuccessResult(new RefreshTokenResponseDto(
             TokenId:  newToken.TokenId,
@@ -122,9 +126,18 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
            ),"Refresh token revoked successfully");
     }
     
-    public async Task<bool> IsTokenValidAsync(ApplicationToken token) => 
-        await Task.FromResult(token.IsActive);
-    
+    public async Task<bool> IsTokenValidAsync(string token)
+    {
+        var entity = await dbContext.RefreshToken
+            .FirstOrDefaultAsync(x => x.Token == token);
+        
+        if (entity == null)
+            return false;
+        
+        return entity.IsActive;
+    }
+
+    #region Mapper 
     private static RefreshTokenResponseDto MapToResponse(ApplicationToken token)
         => new(
             TokenId: token.TokenId,
@@ -139,4 +152,6 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
             RevokedByIp: token.RevokedByIp,
             RevocationReason: token.RevocationReason
         );
+    #endregion
+  
 }
