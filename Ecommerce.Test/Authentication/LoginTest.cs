@@ -3,12 +3,13 @@ using System.Net.Http.Json;
 using Ecommerce.Api;
 using Ecommerce.Shared.AuthenticationDTO;
 using Ecommerce.Shared.Wrapper;
+using Ecommerce.Test.Authentication.Helpers;
 using Ecommerce.Test.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 using Assert = NUnit.Framework.Assert;
 
-namespace Ecommerce.Test.Authentication.Helpers;
+namespace Ecommerce.Test.Authentication;
 
 public class LoginTest(CustomWebApplicationFactory<Program> factory, ITestOutputHelper output):
     TestBase(factory)
