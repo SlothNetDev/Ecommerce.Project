@@ -1,9 +1,11 @@
 using System.Text;
 using Ecommerce.Api.Middleware;
 using Ecommerce.Core;
+using Ecommerce.Core.Application.Common.Interfaces;
 using Ecommerce.Core.Application.Settings;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
+using Ecommerce.Infrastructure.Identity.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -57,7 +59,14 @@ namespace Ecommerce.Api
                     options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceDbConnection"));
                 }
             });
-            
+
+            #region IOC container
+            //JWT token
+            builder.Services.AddScoped<ITokenService, TokenService>();   
+            builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+             
+
+            #endregion
             #region Identity setUp
             builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
                 {
@@ -108,6 +117,8 @@ namespace Ecommerce.Api
                 });
 
             #endregion
+            
+            
             
             
             var app = builder.Build();
