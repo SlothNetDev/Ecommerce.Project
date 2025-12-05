@@ -12,12 +12,27 @@ using Microsoft.Extensions.Logging;
 namespace Ecommerce.Infrastructure.Identity.Services;
 
 public class RefreshTokenService(ApplicationDbContext dbContext,
-    ILogger<RefreshTokenService> logger) :IRefreshTokenService
+    ILogger<RefreshTokenService> logger,
+    IIpAdressService ipAddressService) :IRefreshTokenService
 {
     public async Task<ResponseType<RefreshTokenResponseDto>> GenerateRefreshTokenAsync(
         string userId, 
         string ipAddress)
     {
+        // 1. Validate and sanitize the IP address first
+        var clientIp = ipAddressService.GetClientIpAddress();
+        
+        // 2. Check if IP is suspicious before generating token
+        if (ipAddressService.IsSuspiciousIp(clientIp))
+        {
+            logger.LogWarning("Suspicious IP attempted to generate refresh token. UserId: {UserId}, IP: {IP}", 
+                userId, clientIp);
+            
+            /*// OPTION A: Block completely (strict)
+            return ResponseType<RefreshTokenResponseDto>.Fail("Token generation blocked due to security policy");*/
+            // OPTION B: Allow but flag for review (recommended for e-commerce)
+            // Continue with token generation but log for monitoring
+        }
         var token = new ApplicationToken()
         {
             TokenId = Guid.NewGuid().ToString(),
@@ -28,6 +43,12 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
             Expires = DateTime.UtcNow.AddDays(7),
         };
 
+        await dbContext.RefreshToken.AddAsync(token);
+        await dbContext.SaveChangesAsync();
+        
+        logger.LogInformation("Refresh token generated for user: {UserId}, IP: {IP}", 
+            userId, clientIp);
+        
         return await Task.FromResult(ResponseType<RefreshTokenResponseDto>.SuccessResult(MapToResponse(token),
             "Refresh token generated"));
     }
