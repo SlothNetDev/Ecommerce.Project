@@ -1,9 +1,7 @@
-
-using Ecommerce.Shared.AuthenticationDTO;
 using Ecommerce.Shared.TokenDTO;
 using Ecommerce.Shared.Wrapper;
 
-namespace Ecommerce.Core.Application.Common.Interfaces;
+namespace Ecommerce.Core.Application.Common.Interfaces.RefreshToken;
 
 public interface IRefreshTokenService
 {
