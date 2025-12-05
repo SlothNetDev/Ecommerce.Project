@@ -28,7 +28,23 @@ public class TokenRefreshService(
             }
                 
             //2. Perform the enhanced Validation with IP address 
-            var validationResult = await refreshTokenService
+            var validationResult = await refreshTokenService.ValidateRefreshTokenWithIpCheckAsync(refreshToken);
+            if (!validationResult.Success)
+            {
+                logger.LogWarning("Refresh token {refreshToken} is invalid", refreshToken);
+                return ResponseType<TokenResponseDto>.Fail("Invalid refresh token");
+            }
+            
+            //3. Check if IP changed address or Suspicious
+            if (validationResult.Message.Contains("suspicious"))
+            {
+                // Optional: Send email notification(will implement soon)
+                /*await _emailService.SendSecurityAlertAsync(
+                    userId, 
+                    "Your account was accessed from a new location");*/
+                logger.LogWarning("Refresh token {refreshToken} is suspicious", refreshToken);
+            }
+            
             //2. Get the stored token with user data
             var storedToken = await dbContext.RefreshToken
                 .Include(x => x.User)
