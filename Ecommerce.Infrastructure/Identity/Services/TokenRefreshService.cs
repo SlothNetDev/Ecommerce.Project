@@ -19,7 +19,7 @@ public class TokenRefreshService(
 {
     public async Task<ResponseType<TokenResponseDto>> RefreshTokenAsync(string accessToken, string refreshToken, string ipAddress)
     {
-       //1. Validate refresh token exist or is active
+            //1. Validate refresh token exist or is active
             var isValid = await refreshTokenService.IsRefreshTokenValidAsync(refreshToken);
             if (!isValid)
             {
@@ -27,7 +27,8 @@ public class TokenRefreshService(
                 return ResponseType<TokenResponseDto>.Fail("Invalid refresh token");
             }
                 
-            
+            //2. Perform the enhanced Validation with IP address 
+            var validationResult = await refreshTokenService
             //2. Get the stored token with user data
             var storedToken = await dbContext.RefreshToken
                 .Include(x => x.User)
