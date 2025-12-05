@@ -1,3 +1,4 @@
+using Ecommerce.Core.Application.Common.Interfaces.RefreshToken;
 using Ecommerce.Core.Application.Settings;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
@@ -33,7 +34,7 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
             // 2. Add isolated in-memory DB
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseInMemoryDatabase($"TestDb_{Guid.NewGuid()}");
+                options.UseInMemoryDatabase("RefreshTokenTestDb");
             });
 
             // 3. Add Test JWT settings
@@ -47,6 +48,9 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
 
             services.AddSingleton(sp =>
                 sp.GetRequiredService<IOptions<JwtSettings>>().Value);
+
+            // 4. Override IP address service for testing
+            services.AddScoped<IIpAdressService, TestIpAddressService>();
         });
 
         builder.ConfigureAppConfiguration((context, config) =>
@@ -89,4 +93,16 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
         foreach (var d in descriptors)
             services.Remove(d);
     }
+}
+
+/// <summary>
+/// Test implementation of IP address service that returns a valid IP for testing
+/// </summary>
+public class TestIpAddressService : IIpAdressService
+{
+    public string GetClientIpAddress() => "127.0.0.1";
+
+    public bool IsSuspiciousIp(string ip) => false;
+
+    public Task<string> GetLocationAsync(string ip) => Task.FromResult("Test Location");
 }
