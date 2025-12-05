@@ -14,6 +14,7 @@ public class ApplicationToken
     // Add reason for revocation
     public string? RevocationReason { get; set; } // "UserLogout", "SuspiciousActivity", etc.
     
+    public string? ReplacedByToken { get; set; }
     // Navigation
     public Guid UserId { get; set; }
     public ApplicationUser User { get; set; } = null!;
