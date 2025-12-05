@@ -50,4 +50,11 @@ public interface IRefreshTokenService
     /// <param name="token">The refresh token string to validate.</param>
     /// <returns>True if the token is valid and usable; otherwise, false.</returns>
     Task<bool> IsRefreshTokenValidAsync(string token);
+
+    /// <summary>
+    /// Validate The refresh token with Ip 
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns>True if refresh token was valid; Otherwise, return false</returns>
+    Task<ResponseType<bool>> ValidateRefreshTokenWithIpCheckAsync(string token);
 }
