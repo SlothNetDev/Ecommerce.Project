@@ -23,5 +23,6 @@ public record RefreshTokenResponseDto(
     string CreatedByIp,
     DateTime? Revoked,
     string? RevokedByIp,
-    string? RevocationReason
+    string? RevocationReason,
+    string? ReplacedByToken
 );
