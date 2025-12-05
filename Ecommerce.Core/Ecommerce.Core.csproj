@@ -14,10 +14,5 @@
   <ItemGroup>
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
   </ItemGroup>
-    
-
-  <ItemGroup>
-    <Folder Include="Domain\Validations\RefreshTokenValidation\" />
-  </ItemGroup>
 
 </Project>
