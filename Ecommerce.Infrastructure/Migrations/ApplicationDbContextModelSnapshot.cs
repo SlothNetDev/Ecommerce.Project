@@ -255,7 +255,7 @@ namespace Ecommerce.Infrastructure.Migrations
 
             modelBuilder.Entity("Ecommerce.Infrastructure.Identity.Entities.ApplicationToken", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("TokenId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("Created")
@@ -267,6 +267,9 @@ namespace Ecommerce.Infrastructure.Migrations
 
                     b.Property<DateTime>("Expires")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ReplacedByToken")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RevocationReason")
                         .HasColumnType("nvarchar(max)");
@@ -284,7 +287,7 @@ namespace Ecommerce.Infrastructure.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("Id");
+                    b.HasKey("TokenId");
 
                     b.HasIndex("UserId");
 
