@@ -34,8 +34,15 @@ public class TestUserHelper
 
         var claims = new List<Claim>
         {
+            // Standard identifiers
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
+
+            //human friendly name
+            new Claim("username", user.UserName),
+
+            //unique id
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
         claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
