@@ -2,6 +2,7 @@ using System.Text;
 using Ecommerce.Api.Middleware;
 using Ecommerce.Core;
 using Ecommerce.Core.Application.Common.Interfaces;
+using Ecommerce.Core.Application.Common.Interfaces.RefreshToken;
 using Ecommerce.Core.Application.Settings;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
