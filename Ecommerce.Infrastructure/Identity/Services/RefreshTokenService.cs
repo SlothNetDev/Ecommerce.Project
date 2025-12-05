@@ -39,7 +39,7 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
             Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
             UserId = Guid.Parse(userId),
             Created = DateTime.UtcNow,
-            CreatedByIp = ipAddress,
+            CreatedByIp = clientIp,
             Expires = DateTime.UtcNow.AddDays(7),
         };
 
@@ -189,6 +189,51 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
         return entity?.IsActive ?? false;
     }
     
+    // Enhanced validation with IP checking
+    public async Task<ResponseType<bool>> ValidateRefreshTokenWithIpCheckAsync(string token)
+    {
+        // 1. Get current IP
+        var clientIp = ipAddressService.GetClientIpAddress();
+        
+        // 2. Get token from database
+        var entity = await dbContext.RefreshToken
+            .FirstOrDefaultAsync(x => x.Token == token);
+
+        if (entity == null || !entity.IsActive)
+        {
+            return ResponseType<bool>.Fail("Invalid or expired token");
+        }
+
+        // 3. Check for IP address change
+        if (entity.CreatedByIp != clientIp)
+        {
+            logger.LogWarning(
+                "Token used from different IP. " +
+                "UserId: {UserId}, Original: {OriginalIP}, Current: {CurrentIP}",
+                entity.UserId, 
+                entity.CreatedByIp, 
+                clientIp);
+
+            // For Level 2: log but allow (user might be traveling, switched networks, etc.)
+            // For Level 3: would require re-authentication
+        }
+
+        // 4. Check if current IP is suspicious
+        if (ipAddressService.IsSuspiciousIp(clientIp))
+        {
+            logger.LogWarning(
+                "Token used from suspicious IP. UserId: {UserId}, IP: {IP}",
+                entity.UserId, 
+                clientIp);
+
+            // Return success but with warning flag
+            return ResponseType<bool>.SuccessResult(
+                true, 
+                "Token valid but from suspicious IP - enhanced verification may be required");
+        }
+
+        return ResponseType<bool>.SuccessResult(true, "Token valid");
+    }
     #region Mapper 
     private RefreshTokenResponseDto MapToResponse(ApplicationToken token)
         => new(
