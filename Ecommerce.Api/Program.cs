@@ -63,10 +63,10 @@ namespace Ecommerce.Api
 
             #region IOC container
             //JWT token
-            builder.Services.AddScoped<ITokenService, TokenService>();   
+            builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
-             
-
+            builder.Services.AddScoped<ITokenRefreshService, TokenRefreshService>();
+            builder.Services.AddScoped<IIpAdressService, IpAddressService>();
             #endregion
             #region Identity setUp
             builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
