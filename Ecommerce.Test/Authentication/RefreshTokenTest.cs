@@ -96,8 +96,7 @@ namespace Ecommerce.Test.Authentication;
         Assert.NotEqual(oldToken.Token, typed?.Data!.RefreshToken);
         Assert.False(string.IsNullOrEmpty(typed.Data?.AccessToken));
     }
-
-
+    
     [Fact]
     public async Task Refresh_Should_Invalidate_Old_Token()
     {
