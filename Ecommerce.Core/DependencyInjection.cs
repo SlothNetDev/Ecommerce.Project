@@ -2,6 +2,7 @@
 using Ecommerce.Core.Domain.Validations.CatalogValidation.ProductValidation;
 using Ecommerce.Core.Domain.Validations.OrderValidation.OrderItemValidation;
 using Ecommerce.Core.Domain.Validations.OrderValidation.OrdersValidation;
+using Ecommerce.Core.Domain.Validations.RefreshTokenValidation;
 using Ecommerce.Core.Domain.Validations.Reviews;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,8 +17,7 @@ namespace Ecommerce.Core
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services)
         {
-            #region
-            //Category Validation
+            #region Category Validation
             services.AddValidatorsFromAssemblyContaining<CategoryRequestValidation>();
             services.AddValidatorsFromAssemblyContaining<CategoryUpdateValidation>();
 
@@ -25,17 +25,19 @@ namespace Ecommerce.Core
             services.AddValidatorsFromAssemblyContaining<ProductUpdateValidation>();
             #endregion
 
-            #region
-            //Order Validation
+            #region Order Validation
             services.AddValidatorsFromAssemblyContaining<StatusUpdateBySellerValidation>(); 
 
             services.AddValidatorsFromAssemblyContaining<OrderRequestValidation>();
             services.AddValidatorsFromAssemblyContaining<OrderUpdateValidation>();
             #endregion
 
-            #region
-            //Reviews Validation
+            #region Reviews Validation
             services.AddValidatorsFromAssemblyContaining<ReviewRequestValidation>();
+            #endregion
+            
+            #region Refresh token validation
+            services.AddValidatorsFromAssemblyContaining<RefreshTokenRequestValidation>();
             #endregion
             return services;
         }
