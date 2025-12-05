@@ -1,3 +1,6 @@
 namespace Ecommerce.Shared.TokenDTO;
 
-public record TokenResponseDto();
+public record TokenResponseDto(
+    string AccessToken ,
+    string RefreshToken,
+    DateTime ExpiresAt );
