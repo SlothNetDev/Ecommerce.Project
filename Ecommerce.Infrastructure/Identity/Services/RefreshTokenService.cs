@@ -69,8 +69,14 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
             "Token retrieved");
     }
 
-    public async Task<ResponseType<string>> RevokeRefreshTokenAsync(string token, string ipAddress, string reason)
+    public async Task<ResponseType<string>> RevokeRefreshTokenAsync(
+        string token, 
+        string ipAddress, 
+        string reason)
     {
+        // 1. Get validated IP address
+        var clientIp = ipAddressService.GetClientIpAddress();
+        
         var entity = await dbContext.RefreshToken
             .FirstOrDefaultAsync(x => x.Token == token);
 
@@ -81,13 +87,13 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
             return ResponseType<string>.SuccessResult("Already revoked", "Token already revoked");
 
         entity.Revoked = DateTime.UtcNow;
-        entity.RevokedByIp = ipAddress;
+        entity.RevokedByIp = clientIp; 
         entity.RevocationReason = reason;
 
         await dbContext.SaveChangesAsync();
         
-        logger.LogInformation("Token revoked: {TokenId}, Reason: {Reason}", 
-            entity.TokenId, reason);
+        logger.LogInformation("Token revoked: {TokenId}, Reason: {Reason}, IP: {IP}", 
+            entity.TokenId, reason, clientIp);
             
         return ResponseType<string>.SuccessResult("Revoked", "Token revoked");
     }
