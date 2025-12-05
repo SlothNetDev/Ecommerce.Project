@@ -7,7 +7,6 @@ using Ecommerce.Test.Authentication.Helpers;
 using Ecommerce.Test.TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
-using Assert = NUnit.Framework.Assert;
 
 namespace Ecommerce.Test.Authentication;
 
@@ -27,7 +26,7 @@ public class LoginTest(CustomWebApplicationFactory<Program> factory, ITestOutput
         var response = await _client.PostAsJsonAsync(LoginEndpoint, payload);
 
         // Expecting your API to return BadRequest (or 400) wrapped ResponseType failure
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
         var typed = await response.Content.ReadFromJsonAsync<ResponseType<AuthenticationResponseDto>>();
         _assert.ShouldFail(typed!, expectedMessage: null);
@@ -40,7 +39,7 @@ public class LoginTest(CustomWebApplicationFactory<Program> factory, ITestOutput
             { Email = "doesnotexist@test.local", Password = "Whatever123!" };
         var response = await _client.PostAsJsonAsync(LoginEndpoint, payload);
 
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
         var typed = await response.Content.ReadFromJsonAsync<ResponseType<AuthenticationResponseDto>>();
         _assert.ShouldFail(typed!, expectedMessage: null);
