@@ -33,19 +33,19 @@ public class RefreshTokenTest : TestBase
         _refreshTokenService = factory.Services.GetRequiredService<IRefreshTokenService>();
         _assert = new AssertApiHelper(output);
         _output = output;
-        EnsureRolesExist();
+        EnsureRolesExistAsync().Wait();
     }
 
-    private void EnsureRolesExist()
+    private async Task EnsureRolesExistAsync()
     {
         var roleManager = _factory.Services.GetRequiredService<RoleManager<ApplicationRole>>();
         var roles = new[] { "Admin", "Costumer", "Seller" };
 
         foreach (var role in roles)
         {
-            if (!roleManager.RoleExistsAsync(role).Result)
+            if (!await roleManager.RoleExistsAsync(role))
             {
-                roleManager.CreateAsync(new ApplicationRole { Name = role }).Wait();
+                await roleManager.CreateAsync(new ApplicationRole { Name = role });
             }
         }
     }
@@ -204,6 +204,14 @@ public class RefreshTokenTest : TestBase
         var secondTyped = await secondResponse.Content.ReadFromJsonAsync<ProblemDetails>();
         _output.WriteLine($"✓ Expected failure: {System.Text.Json.JsonSerializer.Serialize(secondTyped)}");
         Assert.Contains("Invalid refresh token", secondTyped?.Detail);
+
+        // Additional assertion: Verify the old token is now revoked in database
+        var dbContext = _factory.Services.GetRequiredService<ApplicationDbContext>();
+        var revokedToken = await dbContext.RefreshToken
+            .FirstOrDefaultAsync(t => t.Token == oldToken.Token);
+        Assert.NotNull(revokedToken);
+        Assert.NotNull(revokedToken.Revoked);
+        Assert.Equal("Rotated", revokedToken.RevocationReason);
     }
 
     /// <summary>
