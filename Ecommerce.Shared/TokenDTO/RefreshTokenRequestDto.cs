@@ -1,3 +1,6 @@
 namespace Ecommerce.Shared.TokenDTO;
 
-public record RefreshTokenRequestDto();
+public record RefreshTokenRequestDto(
+    string BearerToken,
+    string RefreshToken
+);
