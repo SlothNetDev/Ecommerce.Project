@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Ecommerce.Shared.Wrapper;
+using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -53,10 +54,10 @@ public class AssertApiHelper(ITestOutputHelper output)
             Log("Response succeeded.");
 
             if (!string.IsNullOrWhiteSpace(expectedMessage))
-                Assert.That(result.Message, Is.EqualTo(expectedMessage));
+                Assert.Equal(expectedMessage, result.Message);
 
             if (expectedData is not null)
-                Assert.That(result.Data, Is.EqualTo(expectedData));
+                Assert.Equal(expectedData, result.Data);
         }
         catch (Exception ex)
         {
@@ -84,7 +85,7 @@ public class AssertApiHelper(ITestOutputHelper output)
             Log("Response failed as expected.");
 
             if (!string.IsNullOrWhiteSpace(expectedMessage))
-                Assert.That(result.Message, Is.EqualTo(expectedMessage));
+                Assert.Equal(expectedMessage, result.Message);
 
             if (expectedErrors is not null && expectedErrors.Any())
             {
@@ -141,11 +142,11 @@ public class AssertApiHelper(ITestOutputHelper output)
     {
         ShouldSucceed(result);
 
-        Assert.AreEqual(expectedPage, result.Data.PageNumber);
-        Assert.AreEqual(expectedPageSize, result.Data.PageSize);
+        Assert.Equal(expectedPage, result.Data.PageNumber);
+        Assert.Equal(expectedPageSize, result.Data.PageSize);
 
         if (expectedTotalCount.HasValue)
-            Assert.AreEqual(expectedTotalCount.Value, result.Data.TotalCount);
+            Assert.Equal(expectedTotalCount.Value, result.Data.TotalCount);
 
         Log("Pagination validated.");
     }
@@ -167,7 +168,7 @@ public class AssertApiHelper(ITestOutputHelper output)
         where T : IEquatable<T>
     {
         ShouldSucceed(result);
-        Assert.That(result.Data, Is.EqualTo(expectedValue));
+        Assert.Equal(expectedValue, result.Data);
         Log("Data matches expected value.");
     }
 
@@ -217,7 +218,7 @@ public class AssertApiHelper(ITestOutputHelper output)
         ShouldFail(result, "Validation failed");
 
         Assert.NotNull(result.Errors);
-        Assert.IsNotEmpty(result.Errors);
+        Assert.NotEmpty(result.Errors);
 
         Log("General validation error validated.");
     }
