@@ -98,9 +98,14 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
         return ResponseType<string>.SuccessResult("Revoked", "Token revoked");
     }
 
-    public async Task<ResponseType<RefreshTokenResponseDto>> RotateRefreshTokenAsync(string oldToken, string ipAddress)
+    public async Task<ResponseType<RefreshTokenResponseDto>> RotateRefreshTokenAsync(
+        string oldToken, 
+        string ipAddress)
     {
-        // 1. Get and validate old token
+        // 1. Get validated current IP address
+        var clientIp = ipAddressService.GetClientIpAddress();
+        
+        // 2. Get and validate old token
         var oldTokenResult = await GetRefreshTokenAsync(oldToken);
         if (!oldTokenResult.Success)
             return ResponseType<RefreshTokenResponseDto>.Fail(oldTokenResult.Message);
@@ -111,37 +116,67 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
         if (oldTokenEntity == null || !oldTokenEntity.IsActive)
             return ResponseType<RefreshTokenResponseDto>.Fail("Invalid or expired token");
 
-        // 2. Revoke old token
+        // 3. SECURITY CHECK: Detect IP address changes (potential token theft)
+        if (oldTokenEntity.CreatedByIp != clientIp)
+        {
+            logger.LogWarning(
+                "IP address mismatch during token rotation. " +
+                "UserId: {UserId}, Original IP: {OriginalIP}, Current IP: {CurrentIP}, " +
+                "TokenId: {TokenId}",
+                oldTokenEntity.UserId, 
+                oldTokenEntity.CreatedByIp, 
+                clientIp,
+                oldTokenEntity.TokenId);
+
+            // OPTION A: Block rotation (strict - banking apps)
+            // return ResponseType<RefreshTokenResponseDto>.Fail("Security violation: IP address changed");
+            
+            // OPTION B: Allow but flag and notify user (recommended for e-commerce)
+            // - Send email notification about login from new location
+            // - Log for fraud detection team
+            // - Continue with rotation
+            
+            // For Level 2 e-commerce: we'll allow but log heavily
+        }
+
+        // 4. Check if current IP is suspicious
+        if (ipAddressService.IsSuspiciousIp(clientIp))
+        {
+            logger.LogWarning(
+                "Suspicious IP attempting token rotation. " +
+                "UserId: {UserId}, IP: {IP}, TokenId: {TokenId}",
+                oldTokenEntity.UserId, 
+                clientIp,
+                oldTokenEntity.TokenId);
+            
+            // For e-commerce: allow but require re-authentication on next sensitive action
+            // (like checkout or address change)
+        }
+
+        // 5. Revoke old token
         oldTokenEntity.Revoked = DateTime.UtcNow;
-        oldTokenEntity.RevokedByIp = ipAddress;
+        oldTokenEntity.RevokedByIp = clientIp; // Use validated IP
         oldTokenEntity.RevocationReason = "Rotated";
         dbContext.RefreshToken.Update(oldTokenEntity);
 
-        // 3. Generate new token
+        // 6. Generate new token with validated IP
         var newTokenResult = await GenerateRefreshTokenAsync(
-            oldTokenEntity.UserId.ToString(), ipAddress);
+            oldTokenEntity.UserId.ToString(), 
+            clientIp); // Pass validated IP
 
         if (!newTokenResult.Success)
             return ResponseType<RefreshTokenResponseDto>.Fail("Failed to generate new token");
 
-        // 4. Link old token to new one
+        // 7. Link old token to new one
         oldTokenEntity.ReplacedByToken = newTokenResult.Data.Token;
 
-        // 5. Save new token to database
-        var newTokenEntity = new ApplicationToken
-        {
-            TokenId = newTokenResult.Data.TokenId,
-            Token = newTokenResult.Data.Token,
-            UserId = oldTokenEntity.UserId,
-            Created = newTokenResult.Data.Created,
-            Expires = newTokenResult.Data.Expires,
-            CreatedByIp = newTokenResult.Data.CreatedByIp
-        };
-
-        await dbContext.RefreshToken.AddAsync(newTokenEntity);
+        // 8. Save changes
         await dbContext.SaveChangesAsync();
 
-        logger.LogInformation("Token rotated for user: {UserId}", oldTokenEntity.UserId);
+        logger.LogInformation(
+            "Token rotated successfully. UserId: {UserId}, IP: {IP}", 
+            oldTokenEntity.UserId, 
+            clientIp);
         
         return newTokenResult;
     }
