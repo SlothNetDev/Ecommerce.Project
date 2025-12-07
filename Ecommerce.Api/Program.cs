@@ -68,6 +68,8 @@ namespace Ecommerce.Api
             builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
             builder.Services.AddScoped<ITokenRefreshService, TokenRefreshService>();
             builder.Services.AddScoped<IIpAdressService, IpAddressService>();
+
+            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
             #endregion
             #region Identity setUp
             builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
