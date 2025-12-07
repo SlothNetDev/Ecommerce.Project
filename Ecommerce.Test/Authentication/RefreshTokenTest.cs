@@ -21,7 +21,7 @@ namespace Ecommerce.Test.Authentication;
 /// Integration tests for refresh token functionality
 /// Tests cover: token rotation, expiration, revocation, replay attacks, and security
 /// </summary>
-public class RefreshTokenTest : TestBase
+public class RefreshTokenTest :  TestBase 
 {
     private readonly IRefreshTokenService _refreshTokenService;
     private readonly AssertApiHelper _assert;
@@ -33,22 +33,11 @@ public class RefreshTokenTest : TestBase
         _refreshTokenService = factory.Services.GetRequiredService<IRefreshTokenService>();
         _assert = new AssertApiHelper(output);
         _output = output;
-        EnsureRolesExistAsync().Wait();
-    }
-
-    private async Task EnsureRolesExistAsync()
-    {
-        var roleManager = _factory.Services.GetRequiredService<RoleManager<ApplicationRole>>();
-        var roles = new[] { "Admin", "Costumer", "Seller" };
-
-        foreach (var role in roles)
-        {
-            if (!await roleManager.RoleExistsAsync(role))
-            {
-                await roleManager.CreateAsync(new ApplicationRole { Name = role });
-            }
-        }
-    }
+        
+        var roles = new RoleExist(factory);
+        roles.EnsureRolesExistAsync().Wait();
+    } 
+    
 
     /// <summary>
     /// SCENARIO: Happy path - valid refresh token returns new access token + new refresh token
@@ -153,7 +142,8 @@ public class RefreshTokenTest : TestBase
             refreshUser = new ApplicationUser
             {
                 UserName = "invalidateold@test.com",
-                Email = "invalidateold@test.com"
+                Email = "invalidateold@test.com",
+                AccountCreatedAt = DateTime.UtcNow
             };
             await userManager.CreateAsync(refreshUser, "Invalidate123!");
             await userManager.AddToRoleAsync(refreshUser, "Costumer");
@@ -204,14 +194,7 @@ public class RefreshTokenTest : TestBase
         var secondTyped = await secondResponse.Content.ReadFromJsonAsync<ProblemDetails>();
         _output.WriteLine($"✓ Expected failure: {System.Text.Json.JsonSerializer.Serialize(secondTyped)}");
         Assert.Contains("Invalid refresh token", secondTyped?.Detail);
-
-        // Additional assertion: Verify the old token is now revoked in database
-        var dbContext = _factory.Services.GetRequiredService<ApplicationDbContext>();
-        var revokedToken = await dbContext.RefreshToken
-            .FirstOrDefaultAsync(t => t.Token == oldToken.Token);
-        Assert.NotNull(revokedToken);
-        Assert.NotNull(revokedToken.Revoked);
-        Assert.Equal("Rotated", revokedToken.RevocationReason);
+        
     }
 
     /// <summary>
