@@ -3,16 +3,12 @@ using System.Security.Claims;
 using System.Text;
 using Ecommerce.Core.Application.Common.Interfaces;
 using Ecommerce.Core.Application.Settings;
-using Ecommerce.Infrastructure.Data;
-using Ecommerce.Shared.AuthenticationDTO;
 using Ecommerce.Shared.TokenDTO;
-using Ecommerce.Shared.Wrapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Ecommerce.Infrastructure.Identity.Services;
+namespace Ecommerce.Infrastructure.Identity.Services.JwtTokenService;
 
 public class TokenService(IOptions<JwtSettings> jwtSettings, 
     ILogger<TokenService> logger)

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Ecommerce.Infrastructure.Identity.Services;
+namespace Ecommerce.Infrastructure.Identity.Services.JwtTokenService;
 
 public class TokenRefreshService(
     IRefreshTokenService refreshTokenService,

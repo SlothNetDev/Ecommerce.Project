@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace Ecommerce.Infrastructure.Identity.Services;
+namespace Ecommerce.Infrastructure.Identity.Services.JwtTokenService;
 
 // In Infrastructure/Services
 public class IpAddressService : IIpAdressService

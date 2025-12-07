@@ -7,6 +7,7 @@ using Ecommerce.Core.Application.Settings;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Infrastructure.Identity.Services;
+using Ecommerce.Infrastructure.Identity.Services.JwtTokenService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

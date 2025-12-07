@@ -1,6 +1,4 @@
-using System.ComponentModel.Design;
 using System.Security.Cryptography;
-using Ecommerce.Core.Application.Common.Interfaces;
 using Ecommerce.Core.Application.Common.Interfaces.RefreshToken;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
@@ -9,7 +7,7 @@ using Ecommerce.Shared.Wrapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Ecommerce.Infrastructure.Identity.Services;
+namespace Ecommerce.Infrastructure.Identity.Services.JwtTokenService;
 
 public class RefreshTokenService(ApplicationDbContext dbContext,
     ILogger<RefreshTokenService> logger,
