@@ -13,6 +13,7 @@ using Ecommerce.Shared.Wrapper;
 using Ecommerce.Test.Authentication.Helpers;
 using Ecommerce.Test.TestUtilities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -128,9 +129,10 @@ public class LoginTest : TestBase
 
         var typed = await response.Content.ReadFromJsonAsync<ResponseType<AuthenticationResponseDto>>();
         _output.WriteLine($"✓ Parsed Response: {System.Text.Json.JsonSerializer.Serialize(typed)}");
-
+        
         _assert.ShouldFail(typed!, expectedMessage: null);
         _output.WriteLine("✓ Authentication correctly rejected for invalid password");
+        
     }
 
     /// <summary>
