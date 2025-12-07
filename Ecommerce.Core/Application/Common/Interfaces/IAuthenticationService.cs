@@ -18,7 +18,7 @@ public interface IAuthenticationService
     /// Returns an authentication response encapsulating tokens and user session details on successful login,
     /// or an error response on failure.
     /// </returns>
-    Task<ResponseType<AuthenticationResponseDto>> LoginAsync(LoginRequestDto request, string ipAddress);
+    Task<ResponseType<AuthenticationResponseDto>> LoginAsync(LoginRequestDto request);
 
     /// <summary>
     /// Logs out the specified user and registers the client's IP address for audit and security tracking.
@@ -28,5 +28,5 @@ public interface IAuthenticationService
     /// <returns>
     /// Returns a response indicating the success or failure of the logout operation.
     /// </returns>
-    Task<ResponseType<string>> LogoutAsync(string userId, string ipAddress);
+    Task<ResponseType<string>> LogoutAsync(string userId);
 }
