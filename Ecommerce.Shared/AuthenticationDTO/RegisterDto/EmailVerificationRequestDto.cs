@@ -1,4 +1,4 @@
-namespace Ecommerce.Shared.AuthenticationDTO;
+namespace Ecommerce.Shared.AuthenticationDTO.RegisterDto;
 
 /// <summary>
 /// Request DTO for email verification using OTP code.

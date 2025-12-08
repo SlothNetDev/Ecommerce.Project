@@ -1,4 +1,4 @@
-namespace Ecommerce.Shared.AuthenticationDTO;
+namespace Ecommerce.Shared.AuthenticationDTO.RegisterDto;
 
 /// <summary>
 /// Response DTO for user registration.
