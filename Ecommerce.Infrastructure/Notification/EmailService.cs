@@ -12,8 +12,6 @@ namespace Ecommerce.Infrastructure.Notification;
 public class EmailService(IFluentEmail fluentEmail, ILogger<EmailService> logger)
     : IEmailService
 {
-    private readonly IFluentEmail _fluentEmail = fluentEmail;
-
     /// <inheritdoc/>
     public async Task<bool> SendOtpEmailAsync(string email, string otpCode, string? userName = null)
     {
@@ -22,7 +20,7 @@ public class EmailService(IFluentEmail fluentEmail, ILogger<EmailService> logger
             var greeting = string.IsNullOrEmpty(userName) ? "Hello" : $"Hello {userName}";
             var body = GenerateOtpEmailBody(greeting, otpCode);
 
-            var emailResponse = await _fluentEmail
+            var emailResponse = await fluentEmail
                 .To(email)
                 .Subject("Your Verification Code")
                 .Body(body, isHtml: true)
@@ -54,7 +52,7 @@ public class EmailService(IFluentEmail fluentEmail, ILogger<EmailService> logger
         {
             var body = GenerateWelcomeEmailBody(firstName);
 
-            var emailResponse = await _fluentEmail
+            var emailResponse = await fluentEmail
                 .To(email)
                 .Subject("Welcome to Our Platform!")
                 .Body(body, isHtml: true)
@@ -86,7 +84,7 @@ public class EmailService(IFluentEmail fluentEmail, ILogger<EmailService> logger
         {
             var body = GeneratePasswordResetEmailBody(userName, resetToken);
 
-            var emailResponse = await _fluentEmail
+            var emailResponse = await fluentEmail
                 .To(email)
                 .Subject("Password Reset Request")
                 .Body(body, isHtml: true)
