@@ -1,12 +1,11 @@
-using Ecommerce.Core.Application.Common.Interfaces;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Core.Application.Settings;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
-namespace Ecommerce.Infrastructure.Identity.Services;
+namespace Ecommerce.Infrastructure.Identity.Services.Register;
 
 /// <summary>
 /// Service for sending emails via SMTP.

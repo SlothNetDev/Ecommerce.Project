@@ -1,9 +1,8 @@
-using Ecommerce.Core.Application.Common.Interfaces;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Shared.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace Ecommerce.Infrastructure.Identity.Services;
+namespace Ecommerce.Infrastructure.Identity.Services.Register;
 
 /// <summary>
 /// Service for generating, storing, and validating One-Time Passwords (OTP).
