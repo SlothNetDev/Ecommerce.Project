@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Ecommerce.Api;
-using Ecommerce.Core.Application.Common.Interfaces.RefreshToken;
+using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Shared.TokenDTO;
