@@ -6,6 +6,7 @@ using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Core.Application.Settings;
 using Ecommerce.Infrastructure.Data;
+using FluentEmail.Core;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Infrastructure.Identity.Services;
 using Ecommerce.Infrastructure.Identity.Services.JwtTokenService;
@@ -78,10 +79,19 @@ namespace Ecommerce.Api
 
             //OTP and Email services
             builder.Services.AddScoped<IOtpService, OtpService>();
-            builder.Services.AddScoped<IEmailService, EmailService>();
 
-            //Email settings configuration
-            builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+            //FluentEmail configuration with SendGrid
+            var sendGridApiKey = builder.Configuration.GetConnectionString("SendGrid");
+            if (string.IsNullOrEmpty(sendGridApiKey))
+            {
+                throw new InvalidOperationException("SendGrid API key is not configured. Please set 'SendGrid:ApiKey' in your configuration.");
+            }
+
+            builder.Services
+                .AddFluentEmail(builder.Configuration["SendGrid:FromEmail"], builder.Configuration["SendGrid:FromName"] ?? "Your App")
+                .AddSendGridSender(sendGridApiKey);
+
+            builder.Services.AddScoped<IEmailService, EmailService>();
             #endregion
             #region Identity setUp
             builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
@@ -139,8 +149,9 @@ namespace Ecommerce.Api
 
             builder.Services.AddHangfire(config =>
             {
-                config.UseSqlServerStorage("EcommerceDbConnection");
+                config.UseSqlServerStorage(builder.Configuration.GetConnectionString("EcommerceDbConnection"));
             });
+            
             builder.Services.AddHangfireServer();
 
             #endregion
