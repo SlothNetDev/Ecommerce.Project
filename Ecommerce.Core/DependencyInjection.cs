@@ -3,7 +3,7 @@ using Ecommerce.Core.Domain.Validations.CatalogValidation.ProductValidation;
 using Ecommerce.Core.Domain.Validations.OrderValidation.OrderItemValidation;
 using Ecommerce.Core.Domain.Validations.OrderValidation.OrdersValidation;
 using Ecommerce.Core.Domain.Validations.RefreshTokenValidation;
-using Ecommerce.Core.Domain.Validations.Reviews;
+using Ecommerce.Core.Domain.Validations.ReviewsValidation;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
