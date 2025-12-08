@@ -1,4 +1,5 @@
 using Ecommerce.Shared.AuthenticationDTO;
+using Ecommerce.Shared.AuthenticationDTO.RegisterDto;
 using FluentValidation;
 
 namespace Ecommerce.Core.Domain.Validations.AuthenticationValidation;

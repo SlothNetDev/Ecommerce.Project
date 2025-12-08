@@ -1,6 +1,7 @@
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Shared.AuthenticationDTO;
+using Ecommerce.Shared.AuthenticationDTO.RegisterDto;
 using Ecommerce.Shared.Enums;
 using Ecommerce.Shared.Wrapper;
 using Microsoft.AspNetCore.Identity;
