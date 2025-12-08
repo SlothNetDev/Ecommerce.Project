@@ -1,31 +1,44 @@
-using System.Net;
-using System.Net.Mail;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
-using Ecommerce.Core.Application.Settings;
+using FluentEmail.Core;
+using FluentEmail.SendGrid;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Ecommerce.Infrastructure.Notification;
 
 /// <summary>
-/// Service for sending emails via SMTP.
-/// Supports Gmail, Outlook, and other SMTP providers.
+/// Service for sending emails via SendGrid.
+/// Uses FluentEmail for clean, testable email composition and sending.
 /// </summary>
-public class EmailService(IOptions<EmailSettings> emailSettings, ILogger<EmailService> logger)
+public class EmailService(IFluentEmail fluentEmail, ILogger<EmailService> logger)
     : IEmailService
 {
-    private readonly EmailSettings _emailSettings = emailSettings.Value;
+    private readonly IFluentEmail _fluentEmail = fluentEmail;
 
     /// <inheritdoc/>
     public async Task<bool> SendOtpEmailAsync(string email, string otpCode, string? userName = null)
     {
         try
         {
-            var subject = "Your Verification Code";
             var greeting = string.IsNullOrEmpty(userName) ? "Hello" : $"Hello {userName}";
             var body = GenerateOtpEmailBody(greeting, otpCode);
 
-            return await SendEmailAsync(email, subject, body, true);
+            var emailResponse = await _fluentEmail
+                .To(email)
+                .Subject("Your Verification Code")
+                .Body(body, isHtml: true)
+                .SendAsync();
+
+            if (emailResponse.Successful)
+            {
+                logger.LogInformation("OTP email sent successfully to: {Email}", email);
+                return true;
+            }
+            else
+            {
+                logger.LogError("Failed to send OTP email to: {Email}. Errors: {Errors}",
+                    email, string.Join(", ", emailResponse.ErrorMessages));
+                return false;
+            }
         }
         catch (Exception ex)
         {
@@ -39,10 +52,25 @@ public class EmailService(IOptions<EmailSettings> emailSettings, ILogger<EmailSe
     {
         try
         {
-            var subject = "Welcome to Our Platform!";
             var body = GenerateWelcomeEmailBody(firstName);
 
-            return await SendEmailAsync(email, subject, body, false);
+            var emailResponse = await _fluentEmail
+                .To(email)
+                .Subject("Welcome to Our Platform!")
+                .Body(body, isHtml: true)
+                .SendAsync();
+
+            if (emailResponse.Successful)
+            {
+                logger.LogInformation("Welcome email sent successfully to: {Email}", email);
+                return true;
+            }
+            else
+            {
+                logger.LogError("Failed to send welcome email to: {Email}. Errors: {Errors}",
+                    email, string.Join(", ", emailResponse.ErrorMessages));
+                return false;
+            }
         }
         catch (Exception ex)
         {
@@ -56,10 +84,25 @@ public class EmailService(IOptions<EmailSettings> emailSettings, ILogger<EmailSe
     {
         try
         {
-            var subject = "Password Reset Request";
             var body = GeneratePasswordResetEmailBody(userName, resetToken);
 
-            return await SendEmailAsync(email, subject, body, false);
+            var emailResponse = await _fluentEmail
+                .To(email)
+                .Subject("Password Reset Request")
+                .Body(body, isHtml: true)
+                .SendAsync();
+
+            if (emailResponse.Successful)
+            {
+                logger.LogInformation("Password reset email sent successfully to: {Email}", email);
+                return true;
+            }
+            else
+            {
+                logger.LogError("Failed to send password reset email to: {Email}. Errors: {Errors}",
+                    email, string.Join(", ", emailResponse.ErrorMessages));
+                return false;
+            }
         }
         catch (Exception ex)
         {
@@ -68,46 +111,6 @@ public class EmailService(IOptions<EmailSettings> emailSettings, ILogger<EmailSe
         }
     }
 
-    /// <summary>
-    /// Core email sending method using SMTP.
-    /// </summary>
-    private async Task<bool> SendEmailAsync(string toEmail, string subject, string body, bool isHtml)
-    {
-        try
-        {
-            using var smtpClient = new SmtpClient(_emailSettings.SmtpServer, _emailSettings.SmtpPort)
-            {
-                Credentials = new NetworkCredential(_emailSettings.SmtpUsername, _emailSettings.SmtpPassword),
-                EnableSsl = _emailSettings.EnableSsl,
-                Timeout = 30000 // 30 seconds timeout
-            };
-
-            var mailMessage = new MailMessage
-            {
-                From = new MailAddress(_emailSettings.FromEmail, _emailSettings.FromName),
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = isHtml
-            };
-
-            mailMessage.To.Add(toEmail);
-
-            await smtpClient.SendMailAsync(mailMessage);
-
-            logger.LogInformation("Email sent successfully to: {Email}, Subject: {Subject}", toEmail, subject);
-            return true;
-        }
-        catch (SmtpException smtpEx)
-        {
-            logger.LogError(smtpEx, "SMTP error sending email to {Email}: {Message}", toEmail, smtpEx.Message);
-            return false;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Unexpected error sending email to {Email}", toEmail);
-            return false;
-        }
-    }
 
     /// <summary>
     /// Generates the HTML body for OTP verification emails.
