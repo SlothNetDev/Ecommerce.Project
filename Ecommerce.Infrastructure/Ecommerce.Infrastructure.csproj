@@ -31,7 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="BackgroundJobs\" />
     <Folder Include="Data\Repository\" />
   </ItemGroup>
 
