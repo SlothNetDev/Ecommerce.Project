@@ -9,7 +9,7 @@ public record RegisterResponseDto()
     /// <summary>
     /// The unique identifier of the newly created user account.
     /// </summary>
-    public string UserId { get; init; } = string.Empty;
+    public Guid UserId { get; init; } = Guid.NewGuid();
 
     /// <summary>
     /// The email address of the registered user.
