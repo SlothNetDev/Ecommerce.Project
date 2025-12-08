@@ -5,7 +5,7 @@ using Ecommerce.Core.Application.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Ecommerce.Infrastructure.BackgroundJobs;
+namespace Ecommerce.Infrastructure.Notification;
 
 /// <summary>
 /// Service for sending emails via SMTP.
