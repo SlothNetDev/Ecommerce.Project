@@ -1,4 +1,4 @@
-namespace Ecommerce.Shared.AuthenticationDTO.RegisterDto;
+namespace Ecommerce.Shared.RegisterDto;
 
 public record RegisterRequestDto()
 {

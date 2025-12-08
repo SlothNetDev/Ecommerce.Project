@@ -1,5 +1,5 @@
 using Ecommerce.Shared.AuthenticationDTO;
-using Ecommerce.Shared.AuthenticationDTO.RegisterDto;
+using Ecommerce.Shared.RegisterDto;
 using Ecommerce.Shared.Wrapper;
 
 namespace Ecommerce.Core.Application.Common.Interfaces.Register;
