@@ -135,7 +135,7 @@ public class UserRegistrationService : IUserRegistrationService
             // 7. Return success response with verification required status
             var response = new RegisterResponseDto
             {
-                UserId = user.Id.ToString(),
+                UserId = user.Id,
                 Email = user.Email!,
                 EmailVerified = false,
                 Message = "Account created successfully. Please check your email for the verification code.",
