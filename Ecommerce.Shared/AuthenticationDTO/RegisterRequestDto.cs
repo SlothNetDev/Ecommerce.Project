@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Ecommerce.Shared.Entities;
 
 namespace Ecommerce.Shared.AuthenticationDTO;
 
