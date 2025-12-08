@@ -1,4 +1,4 @@
-﻿namespace Ecommerce.Shared.Entities
+﻿namespace Ecommerce.Shared.Enums
 {
     public enum Status
     {
