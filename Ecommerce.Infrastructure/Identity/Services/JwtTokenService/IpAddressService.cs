@@ -1,4 +1,4 @@
-using Ecommerce.Core.Application.Common.Interfaces.RefreshToken;
+using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
