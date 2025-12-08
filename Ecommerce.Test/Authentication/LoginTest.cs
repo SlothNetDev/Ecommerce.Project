@@ -4,7 +4,6 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using Ecommerce.Api;
 using Ecommerce.Core.Application.Common.Interfaces;
-using Ecommerce.Core.Application.Common.Interfaces.RefreshToken;
 using Ecommerce.Core.Application.Settings;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
