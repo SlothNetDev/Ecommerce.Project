@@ -1,13 +1,11 @@
 using Ecommerce.Core.Application.Common.Interfaces.Register;
-using Ecommerce.Core.Domain.Entities;
 using Ecommerce.Core.Domain.Utilities;
-using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Shared.Enums;
 using Hangfire;
 using Microsoft.Extensions.Logging;
 using OtpData = Ecommerce.Core.Domain.Entities.OtpData;
 
-namespace Ecommerce.Infrastructure.Identity.Services.Register;
+namespace Ecommerce.Infrastructure.Identity.Services;
 
 /// <summary>
 /// Service for generating, storing, and validating One-Time Passwords (OTP).

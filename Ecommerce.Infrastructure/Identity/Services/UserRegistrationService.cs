@@ -1,13 +1,12 @@
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Infrastructure.Identity.Entities;
-using Ecommerce.Shared.AuthenticationDTO;
 using Ecommerce.Shared.Enums;
 using Ecommerce.Shared.RegisterDto;
 using Ecommerce.Shared.Wrapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
-namespace Ecommerce.Infrastructure.Identity.Services.Register;
+namespace Ecommerce.Infrastructure.Identity.Services;
 
 /// <summary>
 /// Service handling user registration with modern OTP email verification.
