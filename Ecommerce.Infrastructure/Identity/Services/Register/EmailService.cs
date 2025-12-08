@@ -11,16 +11,10 @@ namespace Ecommerce.Infrastructure.Identity.Services.Register;
 /// Service for sending emails via SMTP.
 /// Supports Gmail, Outlook, and other SMTP providers.
 /// </summary>
-public class EmailService : IEmailService
+public class EmailService(IOptions<EmailSettings> emailSettings, ILogger<EmailService> logger)
+    : IEmailService
 {
-    private readonly EmailSettings _emailSettings;
-    private readonly ILogger<EmailService> _logger;
-
-    public EmailService(IOptions<EmailSettings> emailSettings, ILogger<EmailService> logger)
-    {
-        _emailSettings = emailSettings.Value;
-        _logger = logger;
-    }
+    private readonly EmailSettings _emailSettings = emailSettings.Value;
 
     /// <inheritdoc/>
     public async Task<bool> SendOtpEmailAsync(string email, string otpCode, string? userName = null)
@@ -35,7 +29,7 @@ public class EmailService : IEmailService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send OTP email to: {Email}", email);
+            logger.LogError(ex, "Failed to send OTP email to: {Email}", email);
             return false;
         }
     }
@@ -52,7 +46,7 @@ public class EmailService : IEmailService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send welcome email to: {Email}", email);
+            logger.LogError(ex, "Failed to send welcome email to: {Email}", email);
             return false;
         }
     }
@@ -69,7 +63,7 @@ public class EmailService : IEmailService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send password reset email to: {Email}", email);
+            logger.LogError(ex, "Failed to send password reset email to: {Email}", email);
             return false;
         }
     }
@@ -100,17 +94,17 @@ public class EmailService : IEmailService
 
             await smtpClient.SendMailAsync(mailMessage);
 
-            _logger.LogInformation("Email sent successfully to: {Email}, Subject: {Subject}", toEmail, subject);
+            logger.LogInformation("Email sent successfully to: {Email}, Subject: {Subject}", toEmail, subject);
             return true;
         }
         catch (SmtpException smtpEx)
         {
-            _logger.LogError(smtpEx, "SMTP error sending email to {Email}: {Message}", toEmail, smtpEx.Message);
+            logger.LogError(smtpEx, "SMTP error sending email to {Email}: {Message}", toEmail, smtpEx.Message);
             return false;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error sending email to {Email}", toEmail);
+            logger.LogError(ex, "Unexpected error sending email to {Email}", toEmail);
             return false;
         }
     }
