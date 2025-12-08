@@ -1,12 +1,7 @@
 ﻿using Ecommerce.Shared.Reviews;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Ecommerce.Core.Domain.Validations.Reviews
+namespace Ecommerce.Core.Domain.Validations.ReviewsValidation
 {
     internal class ReviewRequestValidation : AbstractValidator<ReviewRequestDto>
     {
