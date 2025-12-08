@@ -142,7 +142,7 @@ public class UserRegistrationService : IUserRegistrationService
                 ExpiresAt = DateTime.UtcNow.AddMinutes(10) // OTP expiration time
             };
 
-            return ResponseType<RegisterResponseDto>.SuccessResult(response);
+            return ResponseType<RegisterResponseDto>.SuccessResult(response,"Successfully registered your Account");
         }
         catch (Exception ex)
         {
