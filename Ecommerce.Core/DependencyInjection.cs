@@ -1,4 +1,5 @@
-﻿using Ecommerce.Core.Domain.Validations.CatalogValidation.CategoryValidation;
+﻿using Ecommerce.Core.Domain.Validations.AuthenticationValidation;
+using Ecommerce.Core.Domain.Validations.CatalogValidation.CategoryValidation;
 using Ecommerce.Core.Domain.Validations.CatalogValidation.ProductValidation;
 using Ecommerce.Core.Domain.Validations.OrderValidation.OrderItemValidation;
 using Ecommerce.Core.Domain.Validations.OrderValidation.OrdersValidation;
@@ -38,6 +39,12 @@ namespace Ecommerce.Core
             
             #region Refresh token validation
             services.AddValidatorsFromAssemblyContaining<RefreshTokenRequestValidation>();
+            #endregion
+            
+            #region  Authentication
+
+            services.AddValidatorsFromAssemblyContaining<LoginRequestValidation>();
+            services.AddValidatorsFromAssemblyContaining<RegistrationRequestValidation>();
             #endregion
             return services;
         }
