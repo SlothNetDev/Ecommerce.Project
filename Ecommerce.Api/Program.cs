@@ -2,7 +2,8 @@ using System.Text;
 using Ecommerce.Api.Middleware;
 using Ecommerce.Core;
 using Ecommerce.Core.Application.Common.Interfaces;
-using Ecommerce.Core.Application.Common.Interfaces.RefreshToken;
+using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
+using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Core.Application.Settings;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
@@ -69,7 +70,16 @@ namespace Ecommerce.Api
             builder.Services.AddScoped<ITokenRefreshService, TokenRefreshService>();
             builder.Services.AddScoped<IIpAdressService, IpAddressService>();
 
+            //Authentication and user management
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+            builder.Services.AddScoped<IUserRegistrationService, UserRegistrationService>();
+
+            //OTP and Email services
+            builder.Services.AddScoped<IOtpService, OtpService>();
+            builder.Services.AddScoped<IEmailService, EmailService>();
+
+            //Email settings configuration
+            builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
             #endregion
             #region Identity setUp
             builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
