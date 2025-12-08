@@ -5,7 +5,7 @@ using Ecommerce.Core.Application.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Ecommerce.Infrastructure.Identity.Services.Register;
+namespace Ecommerce.Infrastructure.BackgroundJobs;
 
 /// <summary>
 /// Service for sending emails via SMTP.
