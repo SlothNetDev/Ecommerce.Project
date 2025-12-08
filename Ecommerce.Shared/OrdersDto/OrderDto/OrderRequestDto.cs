@@ -1,4 +1,4 @@
-﻿using Ecommerce.Shared.Entities;
+﻿using Ecommerce.Shared.Enums;
 
 namespace Ecommerce.Shared.OrdersDto.OrderDto
 {
