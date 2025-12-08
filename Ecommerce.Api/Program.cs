@@ -10,6 +10,7 @@ using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Infrastructure.Identity.Services;
 using Ecommerce.Infrastructure.Identity.Services.JwtTokenService;
 using Ecommerce.Infrastructure.Identity.Services.Register;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -132,10 +133,17 @@ namespace Ecommerce.Api
                 });
 
             #endregion
-            
-            
-            
-            
+
+
+            #region  Calling for background job hangfire
+
+            builder.Services.AddHangfire(config =>
+            {
+                config.UseSqlServerStorage("EcommerceDbConnection");
+            });
+            builder.Services.AddHangfireServer();
+
+            #endregion
             var app = builder.Build();
             
             // Configure the HTTP request pipeline.
@@ -149,6 +157,8 @@ namespace Ecommerce.Api
                 });
             }
             
+            //call hangfire
+            app.UseHangfireDashboard(); //add hangfire url(background url)
             //adding global middleware
             app.UseMiddleware<MiddlewareException>();
             
