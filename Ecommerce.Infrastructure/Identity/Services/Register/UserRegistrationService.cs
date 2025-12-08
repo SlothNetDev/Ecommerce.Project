@@ -14,25 +14,13 @@ namespace Ecommerce.Infrastructure.Identity.Services.Register;
 /// Implements the complete registration workflow including account creation,
 /// OTP generation, email verification, and account activation.
 /// </summary>
-public class UserRegistrationService : IUserRegistrationService
+public class UserRegistrationService(
+    UserManager<ApplicationUser> userManager,
+    IOtpService otpService,
+    IEmailService emailService,
+    ILogger<UserRegistrationService> logger)
+    : IUserRegistrationService
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IOtpService _otpService;
-    private readonly IEmailService _emailService;
-    private readonly ILogger<UserRegistrationService> _logger;
-
-    public UserRegistrationService(
-        UserManager<ApplicationUser> userManager,
-        IOtpService otpService,
-        IEmailService emailService,
-        ILogger<UserRegistrationService> logger)
-    {
-        _userManager = userManager;
-        _otpService = otpService;
-        _emailService = emailService;
-        _logger = logger;
-    }
-
     /// <summary>
     /// Registers a new user with OTP email verification.
     /// Creates account with EmailConfirmed = false, generates OTP, and sends verification email.
@@ -44,26 +32,26 @@ public class UserRegistrationService : IUserRegistrationService
             // 1. Validate passwords match
             if (request.Password != request.ConfirmPassword)
             {
-                _logger.LogWarning("REG_001: Password confirmation failed for email: {Email}", request.Email);
+                logger.LogWarning("REG_001: Password confirmation failed for email: {Email}", request.Email);
                 return ResponseType<RegisterResponseDto>.Fail(
                     "PasswordMismatch",
                     "Password and confirmation password do not match.");
             }
 
             // 2. Check if email already exists
-            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+            var existingUser = await userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
             {
                 // If user exists but email is not confirmed, allow re-registration
                 if (!existingUser.EmailConfirmed)
                 {
-                    _logger.LogInformation("REG_002: Re-registering unconfirmed user: {Email}", request.Email);
+                    logger.LogInformation("REG_002: Re-registering unconfirmed user: {Email}", request.Email);
                     // Clean up any existing OTP for this email
-                    await _otpService.RemoveOtpAsync(request.Email);
+                    await otpService.RemoveOtpAsync(request.Email);
                 }
                 else
                 {
-                    _logger.LogWarning("REG_003: Attempted registration with existing confirmed email: {Email}", request.Email);
+                    logger.LogWarning("REG_003: Attempted registration with existing confirmed email: {Email}", request.Email);
                     return ResponseType<RegisterResponseDto>.Fail(
                         "EmailAlreadyExists",
                         "An account with this email already exists.");
@@ -81,38 +69,38 @@ public class UserRegistrationService : IUserRegistrationService
                 AccountCreatedAt = DateTime.UtcNow
             };
 
-            var createResult = await _userManager.CreateAsync(user, request.Password);
+            var createResult = await userManager.CreateAsync(user, request.Password);
 
             if (!createResult.Succeeded)
             {
                 var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
-                _logger.LogError("REG_004: User creation failed for {Email}: {Errors}", request.Email, errors);
+                logger.LogError("REG_004: User creation failed for {Email}: {Errors}", request.Email, errors);
                 return ResponseType<RegisterResponseDto>.Fail(
                     "RegistrationFailed",
                     $"Account creation failed: {errors}");
             }
 
             // 4. Assign default "Customer" role
-            var roleResult = await _userManager.AddToRoleAsync(user, "Costumer");
+            var roleResult = await userManager.AddToRoleAsync(user, "Costumer");
             if (!roleResult.Succeeded)
             {
                 var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
-                _logger.LogError("REG_005: Role assignment failed for user {UserId}: {Errors}", user.Id, errors);
+                logger.LogError("REG_005: Role assignment failed for user {UserId}: {Errors}", user.Id, errors);
 
                 // Clean up: delete the user if role assignment fails
-                await _userManager.DeleteAsync(user);
+                await userManager.DeleteAsync(user);
                 return ResponseType<RegisterResponseDto>.Fail(
                     "RegistrationFailed",
                     "Failed to assign user role. Please try again.");
             }
 
             // 5. Generate OTP
-            var otpGenerated = await _otpService.GenerateOtpAsync(request.Email);
+            var otpGenerated = await otpService.GenerateOtpAsync(request.Email);
             if (!otpGenerated)
             {
-                _logger.LogError("REG_006: OTP generation failed for {Email}", request.Email);
+                logger.LogError("REG_006: OTP generation failed for {Email}", request.Email);
                 // Clean up: delete the user if OTP generation fails
-                await _userManager.DeleteAsync(user);
+                await userManager.DeleteAsync(user);
                 return ResponseType<RegisterResponseDto>.Fail(
                     "OtpGenerationFailed",
                     "Failed to generate verification code. Please try again.");
@@ -124,12 +112,12 @@ public class UserRegistrationService : IUserRegistrationService
 
             if (!emailSent)
             {
-                _logger.LogWarning("REG_007: OTP email sending failed for {Email}", request.Email);
+                logger.LogWarning("REG_007: OTP email sending failed for {Email}", request.Email);
                 // Note: We don't delete the user here as they might try verification manually
                 // In production, you might want to implement a retry mechanism or queue system
             }
 
-            _logger.LogInformation("REG_008: User registered successfully, OTP sent: {Email} (ID: {UserId})",
+            logger.LogInformation("REG_008: User registered successfully, OTP sent: {Email} (ID: {UserId})",
                 request.Email, user.Id);
 
             // 7. Return success response with verification required status
@@ -146,7 +134,7 @@ public class UserRegistrationService : IUserRegistrationService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "REG_009: Unexpected error during registration for {Email}", request.Email);
+            logger.LogError(ex, "REG_009: Unexpected error during registration for {Email}", request.Email);
             return ResponseType<RegisterResponseDto>.Fail(
                 "RegistrationError",
                 "An unexpected error occurred during registration. Please try again.");
@@ -162,7 +150,7 @@ public class UserRegistrationService : IUserRegistrationService
         try
         {
             // 1. Validate OTP
-            var validationResult = await _otpService.ValidateOtpAsync(request.Email, request.VerificationCode);
+            var validationResult = await otpService.ValidateOtpAsync(request.Email, request.VerificationCode);
 
             switch (validationResult)
             {
@@ -171,47 +159,47 @@ public class UserRegistrationService : IUserRegistrationService
                     break;
 
                 case OtpValidationResult.Invalid:
-                    _logger.LogWarning("VER_001: Invalid OTP code for email: {Email}", request.Email);
+                    logger.LogWarning("VER_001: Invalid OTP code for email: {Email}", request.Email);
                     return ResponseType<string>.Fail(
                         "InvalidCode",
                         "The verification code is incorrect. Please check and try again.");
 
                 case OtpValidationResult.Expired:
-                    _logger.LogWarning("VER_002: Expired OTP for email: {Email}", request.Email);
+                    logger.LogWarning("VER_002: Expired OTP for email: {Email}", request.Email);
                     return ResponseType<string>.Fail(
                         "CodeExpired",
                         "The verification code has expired. Please request a new one.");
 
                 case OtpValidationResult.TooManyAttempts:
-                    _logger.LogWarning("VER_003: Too many OTP attempts for email: {Email}", request.Email);
+                    logger.LogWarning("VER_003: Too many OTP attempts for email: {Email}", request.Email);
                     return ResponseType<string>.Fail(
                         "TooManyAttempts",
                         "Too many failed attempts. Please wait before trying again.");
 
                 case OtpValidationResult.NotFound:
                 default:
-                    _logger.LogWarning("VER_004: No OTP found for email: {Email}", request.Email);
+                    logger.LogWarning("VER_004: No OTP found for email: {Email}", request.Email);
                     return ResponseType<string>.Fail(
                         "CodeNotFound",
                         "No verification code found. Please register first or request a new code.");
             }
 
             // 2. Find and confirm the user
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            var user = await userManager.FindByEmailAsync(request.Email);
             if (user == null)
             {
-                _logger.LogError("VER_005: User not found for verified email: {Email}", request.Email);
+                logger.LogError("VER_005: User not found for verified email: {Email}", request.Email);
                 return ResponseType<string>.Fail(
                     "UserNotFound",
                     "Account not found. Please register first.");
             }
 
             // 3. Confirm email
-            var confirmResult = await _userManager.ConfirmEmailAsync(user, await GenerateEmailConfirmationTokenAsync(user));
+            var confirmResult = await userManager.ConfirmEmailAsync(user, await GenerateEmailConfirmationTokenAsync(user));
             if (!confirmResult.Succeeded)
             {
                 var errors = string.Join(", ", confirmResult.Errors.Select(e => e.Description));
-                _logger.LogError("VER_006: Email confirmation failed for user {UserId}: {Errors}", user.Id, errors);
+                logger.LogError("VER_006: Email confirmation failed for user {UserId}: {Errors}", user.Id, errors);
                 return ResponseType<string>.Fail(
                     "ConfirmationFailed",
                     "Email confirmation failed. Please contact support.");
@@ -219,9 +207,9 @@ public class UserRegistrationService : IUserRegistrationService
 
             // 4. Send welcome email
             var userName = $"{user.FirstName} {user.LastName}".Trim();
-            await _emailService.SendWelcomeEmailAsync(user.Email!, user.UserName!, user.FirstName);
+            await emailService.SendWelcomeEmailAsync(user.Email!, user.UserName!, user.FirstName);
 
-            _logger.LogInformation("VER_007: Email verified successfully for user: {Email} (ID: {UserId})",
+            logger.LogInformation("VER_007: Email verified successfully for user: {Email} (ID: {UserId})",
                 request.Email, user.Id);
 
             return ResponseType<string>.SuccessResult(
@@ -229,7 +217,7 @@ public class UserRegistrationService : IUserRegistrationService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "VER_008: Unexpected error during email verification for {Email}", request.Email);
+            logger.LogError(ex, "VER_008: Unexpected error during email verification for {Email}", request.Email);
             return ResponseType<string>.Fail(
                 "VerificationError",
                 "An unexpected error occurred during verification. Please try again.");
@@ -244,7 +232,7 @@ public class UserRegistrationService : IUserRegistrationService
     {
         // This method is kept for backward compatibility
         // In modern implementation, email confirmation happens via OTP
-        _logger.LogWarning("LEGACY_001: Legacy ConfirmEmail called for {Email}", email);
+        logger.LogWarning("LEGACY_001: Legacy ConfirmEmail called for {Email}", email);
         return ResponseType<string>.Fail(
             "MethodDeprecated",
             "Please use the new email verification process with OTP codes.");
@@ -256,7 +244,7 @@ public class UserRegistrationService : IUserRegistrationService
     public async Task<ResponseType<string>> ForgotPassword(string email)
     {
         // TODO: Implement password reset with OTP
-        _logger.LogInformation("FORGOT_001: Password reset requested for {Email}", email);
+        logger.LogInformation("FORGOT_001: Password reset requested for {Email}", email);
         return ResponseType<string>.SuccessResult(
             "Password reset functionality will be implemented soon.");
     }
@@ -280,14 +268,14 @@ public class UserRegistrationService : IUserRegistrationService
             // This simulates what would happen in a real email service
             var demoOtpCode = "123456"; // In production, this would come from secure storage
 
-            _logger.LogWarning("DEV_MODE: Sending demo OTP {Code} to {Email}. In production, use secure OTP retrieval.",
+            logger.LogWarning("DEV_MODE: Sending demo OTP {Code} to {Email}. In production, use secure OTP retrieval.",
                 demoOtpCode, email);
 
-            return await _emailService.SendOtpEmailAsync(email, demoOtpCode, userName);
+            return await emailService.SendOtpEmailAsync(email, demoOtpCode, userName);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send OTP email to {Email}", email);
+            logger.LogError(ex, "Failed to send OTP email to {Email}", email);
             return false;
         }
     }
@@ -297,6 +285,6 @@ public class UserRegistrationService : IUserRegistrationService
     /// </summary>
     private async Task<string> GenerateEmailConfirmationTokenAsync(ApplicationUser user)
     {
-        return await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        return await userManager.GenerateEmailConfirmationTokenAsync(user);
     }
 }
