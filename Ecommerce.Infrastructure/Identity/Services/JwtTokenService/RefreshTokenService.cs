@@ -1,5 +1,5 @@
 using System.Security.Cryptography;
-using Ecommerce.Core.Application.Common.Interfaces.RefreshToken;
+using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Shared.TokenDTO;
