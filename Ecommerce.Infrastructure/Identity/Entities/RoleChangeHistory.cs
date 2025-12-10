@@ -12,13 +12,13 @@ public class RoleChangeHistory
     public ApplicationUser User { get; set; } = null!;
     
     public Guid? OldRoleId { get; set; }
-    public IdentityRole? OldRole { get; set; }
+    public ApplicationRole OldRole { get; set; } = null!;
     
-    public Guid? NewRoleId { get; set; }
-    public IdentityRole? NewRole { get; set; }
+    public Guid NewRoleId { get; set; }
+    public ApplicationRole NewRole { get; set; } = null!;
 
     //admin who change it
-    public Guid? ChangeBy { get; set; } 
+    public Guid ChangeBy { get; set; } 
     public ApplicationUser? ChangeByUser { get; set; } = null!;
 
     public DateTime ChangeAt { get; set; } =  DateTime.Now;
