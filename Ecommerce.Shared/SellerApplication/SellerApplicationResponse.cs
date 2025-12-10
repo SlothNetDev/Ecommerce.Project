@@ -4,10 +4,10 @@ namespace Ecommerce.Shared.SellerApplication;
 
 public record SellerApplicationResponse()
 {
-    public Guid SellerId { get; set; } 
-    public string BusinessName { get; set; } = string.Empty;
+    public Guid SellerId { get; init; } 
+    public string BusinessName { get; init; } = string.Empty;
  
-    public string ApplicationReason{get;set;} = string.Empty;
-    public string? Status { get; set; }
-    public DateTime SubmittedAt { get; set; }
+    public string ApplicationReason{get;init;} = string.Empty;
+    public string? Status { get; init; }
+    public DateTime SubmittedAt { get; init; }
 };
