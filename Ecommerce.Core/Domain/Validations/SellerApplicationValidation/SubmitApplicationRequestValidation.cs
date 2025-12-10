@@ -8,14 +8,12 @@ public class SubmitApplicationRequestValidation : AbstractValidator<SubmitApplic
     public SubmitApplicationRequestValidation()
     {
         RuleFor(x => x.BusinessName)
-            .MinimumLength(3)
-            .MaximumLength(100)
-            .NotEmpty()
-            .WithMessage("The business name is required.");
+            .MinimumLength(3).WithMessage("Cannot be less than 3 characters")
+            .MaximumLength(100).WithMessage("Cannot be more than 100 characters")
+            .NotEmpty().WithMessage("The business name is required.");
 
         RuleFor(x => x.ApplicationReason)
-            .MinimumLength(10)
-            .MaximumLength(1000)
-            .WithMessage("The application reason Cannot exceed to 1000 characters.");
+            .MinimumLength(10).WithMessage("Cannot be less than 10 characters")
+            .MaximumLength(1000).WithMessage("Cannot be more than 1000 characters");
     }
 }
