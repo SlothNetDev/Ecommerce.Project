@@ -5,6 +5,8 @@ using Ecommerce.Core.Domain.Validations.OrderValidation.OrderItemValidation;
 using Ecommerce.Core.Domain.Validations.OrderValidation.OrdersValidation;
 using Ecommerce.Core.Domain.Validations.RefreshTokenValidation;
 using Ecommerce.Core.Domain.Validations.ReviewsValidation;
+using Ecommerce.Core.Domain.Validations.SellerApplicationValidation;
+using Ecommerce.Shared.SellerApplication;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -45,6 +47,10 @@ namespace Ecommerce.Core
 
             services.AddValidatorsFromAssemblyContaining<LoginRequestValidation>();
             services.AddValidatorsFromAssemblyContaining<RegistrationRequestValidation>();
+            #endregion
+
+            #region Application Seller Validation
+            services.AddValidatorsFromAssemblyContaining<SubmitApplicationRequestValidation>();
             #endregion
             return services;
         }
