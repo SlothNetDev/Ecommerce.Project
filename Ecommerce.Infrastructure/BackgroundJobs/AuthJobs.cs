@@ -1,3 +1,4 @@
+using Ecommerce.Core.Application.Common.Interfaces.INotification;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 
 namespace Ecommerce.Infrastructure.BackgroundJobs;

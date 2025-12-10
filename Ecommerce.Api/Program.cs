@@ -2,6 +2,7 @@ using System.Text;
 using Ecommerce.Api.Middleware;
 using Ecommerce.Core;
 using Ecommerce.Core.Application.Common.Interfaces;
+using Ecommerce.Core.Application.Common.Interfaces.INotification;
 using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Core.Application.Settings;
