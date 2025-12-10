@@ -7,7 +7,7 @@ using Ecommerce.Shared.Wrapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
-namespace Ecommerce.Infrastructure.Identity.Services;
+namespace Ecommerce.Infrastructure.Identity.Services.Register;
 
 /// <summary>
 /// Service handling user registration with modern OTP email verification.

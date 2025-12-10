@@ -32,7 +32,6 @@
 
   <ItemGroup>
     <Folder Include="Data\Repository\" />
-    <Folder Include="Identity\Services\Register\" />
   </ItemGroup>
 
 </Project>

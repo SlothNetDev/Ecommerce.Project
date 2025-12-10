@@ -5,7 +5,7 @@ using Hangfire;
 using Microsoft.Extensions.Logging;
 using OtpData = Ecommerce.Core.Domain.Entities.OtpData;
 
-namespace Ecommerce.Infrastructure.Identity.Services;
+namespace Ecommerce.Infrastructure.Identity.Services.Register;
 
 /// <summary>
 /// Service for generating, storing, and validating One-Time Passwords (OTP).
