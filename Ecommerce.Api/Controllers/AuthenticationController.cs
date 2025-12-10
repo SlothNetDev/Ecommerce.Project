@@ -1,5 +1,6 @@
 using Ecommerce.Core.Application.Common.Interfaces;
 using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
+using Ecommerce.Core.Application.Common.Interfaces.Login;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Shared.AuthenticationDTO;

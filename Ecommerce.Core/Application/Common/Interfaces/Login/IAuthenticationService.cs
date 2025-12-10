@@ -1,7 +1,7 @@
 using Ecommerce.Shared.AuthenticationDTO;
 using Ecommerce.Shared.Wrapper;
 
-namespace Ecommerce.Core.Application.Common.Interfaces;
+namespace Ecommerce.Core.Application.Common.Interfaces.Login;
 
 /// <summary>
 /// Defines authentication operations required for user login and logout workflows in production environments.
