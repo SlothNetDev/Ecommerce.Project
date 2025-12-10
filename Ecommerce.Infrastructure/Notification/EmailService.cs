@@ -1,4 +1,4 @@
-using Ecommerce.Core.Application.Common.Interfaces.INotification;
+using Ecommerce.Core.Application.Common.Interfaces.Notification;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 using FluentEmail.Core;
 using FluentEmail.SendGrid;

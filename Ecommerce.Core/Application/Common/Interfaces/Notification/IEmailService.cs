@@ -1,4 +1,4 @@
-namespace Ecommerce.Core.Application.Common.Interfaces.INotification;
+namespace Ecommerce.Core.Application.Common.Interfaces.Notification;
 
 /// <summary>
 /// Defines operations for sending various types of emails in the application.
