@@ -1,9 +1,8 @@
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Core.Domain.Utilities;
+using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Shared.Enums;
-using Hangfire;
 using Microsoft.Extensions.Logging;
-using OtpData = Ecommerce.Core.Domain.Entities.OtpData;
 
 namespace Ecommerce.Infrastructure.Identity.Services.Register;
 
@@ -25,7 +24,7 @@ public class OtpService(ILogger<OtpService> logger) : IOtpService
             // Normalize email to lowercase for consistency
             var normalizedEmail = email.ToLowerInvariant();
 
-            // Generate a 6-digit random OTP using utility class
+            // Generate a 6-digit random OTP
             var otpCode = OtpGenerator.GenerateOtp();
 
             // Create OTP data
@@ -42,15 +41,13 @@ public class OtpService(ILogger<OtpService> logger) : IOtpService
             // Store in memory (replace with Redis/database in production)
             _otpStore[normalizedEmail] = otpData;
 
-            // Schedule cleanup with Hangfire (fire-and-forget, runs after expiration)
-            BackgroundJob.Schedule(
-                () => CleanupExpiredOtp(normalizedEmail),
-                _otpExpiration);
+            // Clean up expired OTPs periodically
+            await CleanupExpiredOtpsAsync();
 
             logger.LogInformation("OTP generated for email: {Email}, expires at: {ExpiresAt}",
                 normalizedEmail, otpData.ExpiresAt);
 
-            return await Task.FromResult(true);
+            return true;
         }
         catch (Exception ex)
         {
@@ -60,7 +57,7 @@ public class OtpService(ILogger<OtpService> logger) : IOtpService
     }
 
     /// <inheritdoc/>
-    public async Task<OtpValidationResult> ValidateOtpAsync(string email, string otpCode)
+    public Task<OtpValidationResult> ValidateOtpAsync(string email, string otpCode)
     {
         try
         {
@@ -70,28 +67,28 @@ public class OtpService(ILogger<OtpService> logger) : IOtpService
             if (!_otpStore.TryGetValue(normalizedEmail, out var otpData))
             {
                 logger.LogWarning("OTP validation failed: No OTP found for email: {Email}", normalizedEmail);
-                return OtpValidationResult.NotFound;
+                return Task.FromResult(OtpValidationResult.NotFound);
             }
 
             // Check if already used
             if (otpData.IsUsed)
             {
                 logger.LogWarning("OTP validation failed: OTP already used for email: {Email}", normalizedEmail);
-                return OtpValidationResult.Invalid;
+                return Task.FromResult(OtpValidationResult.Invalid);
             }
 
             // Check if expired
             if (DateTime.UtcNow > otpData.ExpiresAt)
             {
                 logger.LogWarning("OTP validation failed: OTP expired for email: {Email}", normalizedEmail);
-                return OtpValidationResult.Expired;
+                return Task.FromResult(OtpValidationResult.Expired);
             }
 
             // Check attempt limit
             if (otpData.Attempts >= _maxAttempts)
             {
                 logger.LogWarning("OTP validation failed: Too many attempts for email: {Email}", normalizedEmail);
-                return OtpValidationResult.TooManyAttempts;
+                return Task.FromResult(OtpValidationResult.TooManyAttempts);
             }
 
             // Increment attempts
@@ -109,7 +106,7 @@ public class OtpService(ILogger<OtpService> logger) : IOtpService
                     _otpStore.Remove(normalizedEmail);
                 }
 
-                return OtpValidationResult.Invalid;
+                return Task.FromResult(OtpValidationResult.Invalid);
             }
 
             // Mark as used and remove from store
@@ -117,12 +114,12 @@ public class OtpService(ILogger<OtpService> logger) : IOtpService
             _otpStore.Remove(normalizedEmail);
 
             logger.LogInformation("OTP validation successful for email: {Email}", normalizedEmail);
-            return await Task.FromResult(OtpValidationResult.Valid);
+            return Task.FromResult(OtpValidationResult.Valid);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "OTP validation error for email: {Email}", email);
-            return OtpValidationResult.Invalid;
+            return Task.FromResult(OtpValidationResult.Invalid);
         }
     }
 
@@ -146,37 +143,30 @@ public class OtpService(ILogger<OtpService> logger) : IOtpService
         var normalizedEmail = email.ToLowerInvariant();
         _otpStore.Remove(normalizedEmail);
         logger.LogInformation("OTP removed for email: {Email}", normalizedEmail);
+        
         return Task.CompletedTask;
     }
 
+    
     /// <summary>
-    /// Cleans up a specific expired OTP (called by Hangfire background job).
-    /// This method is designed to be called asynchronously by Hangfire after OTP expiration.
+    /// Cleans up expired OTPs from memory to prevent memory leaks.
+    /// In production, this would be handled differently (e.g., background job).
     /// </summary>
-    /// <param name="email">The email address associated with the OTP to clean up.</param>
-    [AutomaticRetry(Attempts = 3)]
-    public Task CleanupExpiredOtp(string email)
+    private Task CleanupExpiredOtpsAsync()
     {
-        try
+        var expiredEmails = _otpStore
+            .Where(kvp => DateTime.UtcNow > kvp.Value.ExpiresAt)
+            .Select(kvp => kvp.Key)
+            .ToList();
+        
+        foreach (var email in expiredEmails)
         {
-            var normalizedEmail = email.ToLowerInvariant();
-
-            if (_otpStore.TryGetValue(normalizedEmail, out var otpData))
-            {
-                if (otpData.IsExpired || otpData.IsUsed)
-                {
-                    _otpStore.Remove(normalizedEmail);
-                    logger.LogInformation("Cleaned up expired/used OTP for email: {Email}", normalizedEmail);
-                }
-            }
-
-            return Task.CompletedTask;
+            _otpStore.Remove(email);
+            logger.LogDebug("Cleaned up expired OTP for email: {Email}", email);
         }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error cleaning up OTP for email: {Email}", email);
-            throw; // Let Hangfire handle retry logic
-        }
+
+        return Task.CompletedTask;
     }
+
     
 }
