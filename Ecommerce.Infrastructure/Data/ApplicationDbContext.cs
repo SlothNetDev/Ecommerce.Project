@@ -22,6 +22,9 @@ namespace Ecommerce.Infrastructure.Data
         public virtual DbSet<Order> OrderDb { get; set; } = null!;
         public virtual DbSet<OrderItem> OrderItemDb { get; set; } = null!;
         public virtual DbSet<Review> ReviewDb { get; set; } = null!;
+        
+        
+        public virtual DbSet<SellerApplication> SellerApplicationDb { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
