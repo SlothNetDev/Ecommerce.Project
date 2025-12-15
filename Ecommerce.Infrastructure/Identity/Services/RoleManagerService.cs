@@ -89,7 +89,7 @@ public class RoleManagerService(
     public async Task<ResponseType<List<string>>> GetUserRoles(Guid userId)
     {
         //1. Validate user id
-        if (string.IsNullOrWhiteSpace(userId.ToString()) || userId != Guid.Empty)
+        if (userId == Guid.Empty)
         {
             logger.LogError("Invalid user id: {UserId}", userId);
             return ResponseType<List<string>>.Fail("Invalid user id");
@@ -104,9 +104,9 @@ public class RoleManagerService(
         }
         
         //3. Return roles
-        var roles = userManager.GetRolesAsync(user);
+        var roles = await userManager.GetRolesAsync(user);
 
-        return ResponseType<List<string>>.SuccessResult(roles.Result.ToList(),
+        return ResponseType<List<string>>.SuccessResult(roles.ToList(),
             "Roles retrieved successfully");
     }
 }
