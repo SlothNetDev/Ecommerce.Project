@@ -7,6 +7,9 @@ public class SubmitApplicationRequestValidation : AbstractValidator<SubmitApplic
 {
     public SubmitApplicationRequestValidation()
     {
+        RuleFor(x => x.SellerId)
+            .NotEmpty().WithMessage("Seller ID is required.");
+        
         RuleFor(x => x.BusinessName)
             .MinimumLength(3).WithMessage("Cannot be less than 3 characters")
             .MaximumLength(100).WithMessage("Cannot be more than 100 characters")
