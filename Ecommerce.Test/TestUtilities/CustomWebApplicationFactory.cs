@@ -2,12 +2,17 @@ using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Core.Application.Settings;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
+using FluentEmail.Core;
+using FluentEmail.Core.Interfaces;
+using FluentEmail.Core.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
@@ -36,7 +41,25 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
             {
                 options.UseInMemoryDatabase("RefreshTokenTestDb");
             });
-
+            
+            //3. get the  grid api key
+            builder.ConfigureAppConfiguration((context, config) =>
+            {
+                // Keep existing providers + add predictable test overrides
+                config.AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["SendGrid:ApiKey"] = "TEST_API_KEY_NOT_USED",
+                    ["SendGrid:FromEmail"] = "test@example.com",
+                    ["SendGrid:FromName"] = "Ecommerce.Tests"
+                });
+            });
+            
+            builder.ConfigureServices(services =>
+            {
+                // Replace the real sender so tests never hit SendGrid
+                services.RemoveAll<ISender>();
+                services.AddSingleton<ISender, NoOpEmailSender>();
+            });
             // 3. Add Test JWT settings
             services.Configure<JwtSettings>(options =>
             {
@@ -60,6 +83,24 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
                 ["ASPNETCORE_ENVIRONMENT"] = "Testing"
             });
         });
+    }
+    private sealed class NoOpEmailSender : ISender
+    {
+        public Task SendAsync(FluentEmail.Core.Email email, CancellationToken token = default)
+        {
+            // Intentionally do nothing (tests should assert behavior without sending)
+            return Task.CompletedTask;
+        }
+
+        public SendResponse Send(IFluentEmail email, CancellationToken? token = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<SendResponse> SendAsync(IFluentEmail email, CancellationToken? token = null)
+        {
+            throw new NotImplementedException();
+        }
     }
     
     //Program.cs 
