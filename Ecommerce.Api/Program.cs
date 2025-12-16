@@ -83,20 +83,40 @@ namespace Ecommerce.Api
 
             //OTP and Email services
             builder.Services.AddScoped<IOtpService, OtpService>();
-
-            //FluentEmail configuration with SendGrid
-            var sendGridApiKey = builder.Configuration.GetConnectionString("SendGrid");
-            if (string.IsNullOrEmpty(sendGridApiKey))
-            {
-                throw new InvalidOperationException("SendGrid API key is not configured. Please set 'SendGrid:ApiKey' in your configuration.");
-            }
-
-            builder.Services
-                .AddFluentEmail(builder.Configuration["SendGrid:FromEmail"], builder.Configuration["SendGrid:FromName"] ?? "Your App")
-                .AddSendGridSender(sendGridApiKey);
+            
+            //roles
+            builder.Services.AddScoped<IRoleManagementService, RoleManagerService>();
+            
+            //seller application
+            builder.Services.AddScoped<ISellerApplicationService, SellerApplicationService>();
+            
 
             builder.Services.AddScoped<IEmailService, EmailService>();
             #endregion
+
+            if (!builder.Environment.IsEnvironment("Testing"))
+            {
+                var sendGridApiKey = builder.Configuration["SendGrid:ApiKey"];
+                var sendGridFromEmail = builder.Configuration["SendGrid:FromEmail"];
+                var sendGridFromName = builder.Configuration["SendGrid:FromName"] ?? "Your App";
+
+                if (string.IsNullOrWhiteSpace(sendGridApiKey))
+                {
+                    throw new InvalidOperationException(
+                        "SendGrid API key is not configured. Please set 'SendGrid:ApiKey' in your configuration.");
+                }
+
+                if (string.IsNullOrWhiteSpace(sendGridFromEmail))
+                {
+                    throw new InvalidOperationException(
+                        "SendGrid FromEmail is not configured. Please set 'SendGrid:FromEmail' in your configuration.");
+                }
+
+                builder.Services
+                    .AddFluentEmail(sendGridFromEmail, sendGridFromName)
+                    .AddSendGridSender(sendGridApiKey);
+            }
+
             #region Identity setUp
             builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
                 {
@@ -149,14 +169,26 @@ namespace Ecommerce.Api
             #endregion
 
 
-            #region  Calling for background job hangfire
+            #region Calling for background job hangfire
 
-            builder.Services.AddHangfire(config =>
+            if (!builder.Environment.IsEnvironment("Testing"))
             {
-                config.UseSqlServerStorage(builder.Configuration.GetConnectionString("EcommerceDbConnection"));
-            });
-            
-            builder.Services.AddHangfireServer();
+                // 1. Get the dedicated connection string
+                var hangfireConnectionString = builder.Configuration.GetConnectionString("HangfireDbConnection");
+
+                if (string.IsNullOrWhiteSpace(hangfireConnectionString))
+                {
+                    throw new NullReferenceException("Hangfire connection string is missing. Please set 'HangfireDbConnection'.");
+                }
+
+                builder.Services.AddHangfire(config =>
+                {
+                    // 2. Use the dedicated connection string for Hangfire storage
+                    config.UseSqlServerStorage(hangfireConnectionString);
+                });
+
+                builder.Services.AddHangfireServer();
+            }
 
             #endregion
             var app = builder.Build();
