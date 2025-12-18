@@ -32,12 +32,12 @@ namespace Ecommerce.Api
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            
+
             builder.Services.AddControllers();
-            
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            
+
             //Add api docs
             builder.Services.AddSwaggerGen(options =>
             {
@@ -48,16 +48,17 @@ namespace Ecommerce.Api
                     Description = "API For Ecommerce"
                 });
             });
+
             //use the validation
             builder.Services.AddInfrastructure();
-            
+
             builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
             {
                 var env = serviceProvider.GetRequiredService<IHostEnvironment>();
                 var config = serviceProvider.GetRequiredService<IConfiguration>();
-                
+
                 Console.WriteLine($"Environment in AddPresentationService: {env.EnvironmentName}");
-                
+
                 if (env.IsEnvironment("Testing"))
                 {
                     Console.WriteLine("Using InMemoryDatabase for Testing");
@@ -69,6 +70,23 @@ namespace Ecommerce.Api
                     options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceDbConnection"));
                 }
             });
+
+            #region Identity setUp
+            builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
+                {
+                    //password
+                    options.Password.RequireDigit = false;
+                    options.Password.RequiredLength = 6;
+                    options.Password.RequireUppercase = false;
+
+                    //attemp to login
+                    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                    options.Lockout.MaxFailedAccessAttempts = 5;
+                    options.Lockout.AllowedForNewUsers = true;
+                })
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+            #endregion
 
             #region IOC container
             //JWT token
@@ -83,13 +101,12 @@ namespace Ecommerce.Api
 
             //OTP and Email services
             builder.Services.AddScoped<IOtpService, OtpService>();
-            
+
             //roles
             builder.Services.AddScoped<IRoleManagementService, RoleManagerService>();
-            
+
             //seller application
             builder.Services.AddScoped<ISellerApplicationService, SellerApplicationService>();
-            
 
             builder.Services.AddScoped<IEmailService, EmailService>();
             #endregion
@@ -117,32 +134,15 @@ namespace Ecommerce.Api
                     .AddSendGridSender(sendGridApiKey);
             }
 
-            #region Identity setUp
-            builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
-                {
-                    //password
-                    options.Password.RequireDigit = false;
-                    options.Password.RequiredLength = 6;
-                    options.Password.RequireUppercase = false;
-            
-            
-                    //attemp to login
-                    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-                    options.Lockout.MaxFailedAccessAttempts = 5;
-                    options.Lockout.AllowedForNewUsers = true;
-                })
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
-            
-            #endregion
+            #region JWT token bearer
 
-            #region JWT token beaerer
-
-            // First: Configure JwtSettings properly
             builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
             builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<JwtSettings>>().Value); // Optional but safe
 
-            //Then: configure JWT scheme
+            // Read JWT settings directly from configuration (NO temporary ServiceProvider)
+            var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()
+                             ?? throw new InvalidOperationException("JwtSettings configuration section is missing.");
+
             builder.Services.AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -150,10 +150,6 @@ namespace Ecommerce.Api
                 })
                 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
                 {
-                    // Read settings from already-registered IOptions
-                    var serviceProvider = builder.Services.BuildServiceProvider(); // temporary provider
-                    var jwtSettings = serviceProvider.GetRequiredService<IOptions<JwtSettings>>().Value;
-
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,
@@ -167,7 +163,6 @@ namespace Ecommerce.Api
                 });
 
             #endregion
-
 
             #region Calling for background job hangfire
 
@@ -191,8 +186,9 @@ namespace Ecommerce.Api
             }
 
             #endregion
+
             var app = builder.Build();
-            
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
             {
@@ -203,16 +199,16 @@ namespace Ecommerce.Api
                     options.RoutePrefix = "api-docs"; // Optional: Changes the URL from /swagger to /api-docs
                 });
             }
-            
+
             //call hangfire
             app.UseHangfireDashboard(); //add hangfire url(background url)
             //adding global middleware
             app.UseMiddleware<MiddlewareException>();
-            
+
             app.UseAuthentication(); // Note: This should come BEFORE UseAuthorization
             app.UseAuthorization();
             app.MapControllers();
-            
+
             app.Run();
         }
     }
