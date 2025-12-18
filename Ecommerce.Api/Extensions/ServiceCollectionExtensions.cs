@@ -21,6 +21,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 
 namespace Ecommerce.Api.Extensions;
 
@@ -55,6 +56,21 @@ public static class ServiceCollectionExtensions
         //Add database
         GetConnectionDbContext(configuration, services);
         
+        //add identity
+        IdentitySetUp(services);
+        
+        //add services IOC container
+        IocContainer(services);
+        
+        //Add Grid service
+        GridService(configuration, services);
+        
+        //add jwt bearer service
+        JwtBearerService(configuration, services);
+        
+        //add hangfire service
+        HangFireService(configuration, services);
+        
         return services;
     }
 
@@ -80,7 +96,7 @@ public static class ServiceCollectionExtensions
         });
     }
 
-    private static void IdentitySetUp(IConfigurationBuilder configuration, IServiceCollection service)
+    private static void IdentitySetUp(IServiceCollection service)
     {
         service.AddIdentity<ApplicationUser, ApplicationRole>(options =>
             {
@@ -97,7 +113,7 @@ public static class ServiceCollectionExtensions
             .AddDefaultTokenProviders();
     }
     
-    private static void IocContainer(IConfigurationBuilder configuration, IServiceCollection service)
+    private static void IocContainer(IServiceCollection service)
     {
         //JWT token
         service.AddScoped<ITokenService, TokenService>();
@@ -198,5 +214,27 @@ public static class ServiceCollectionExtensions
                 service.AddHangfireServer();
             }
         }
+    }
+    
+}
+public static class SerilogExtensions
+{
+    public static WebApplicationBuilder AddCleanSerilog(this WebApplicationBuilder builder)
+    {
+        builder.Logging.ClearProviders();
+
+        builder.Host.UseSerilog((context, services, loggerConfiguration) =>
+        {
+            loggerConfiguration
+                .ReadFrom.Configuration(context.Configuration)
+                .ReadFrom.Services(services)
+
+                // Always good defaults
+                .Enrich.FromLogContext()
+                .Enrich.WithProperty("Application", context.HostingEnvironment.ApplicationName)
+                .Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName);
+        });
+
+        return builder;
     }
 }
