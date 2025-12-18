@@ -1,5 +1,6 @@
 using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Core.Application.Settings;
+using Ecommerce.Infrastructure.BackgroundJobs;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
 using FluentEmail.Core;
@@ -59,6 +60,9 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
                 // Replace the real sender so tests never hit SendGrid
                 services.RemoveAll<ISender>();
                 services.AddSingleton<ISender, NoOpEmailSender>();
+                /*services.RemoveAll<IBackgroundJobService>();
+                services.AddSingleton<IBackgroundJobService, FakeBackgroundJobService>();*/
+
             });
             // 3. Add Test JWT settings
             services.Configure<JwtSettings>(options =>
