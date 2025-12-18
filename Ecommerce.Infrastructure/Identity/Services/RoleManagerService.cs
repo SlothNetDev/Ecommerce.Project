@@ -8,8 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace Ecommerce.Infrastructure.Identity.Services;
 
 public class RoleManagerService(
-    ApplicationDbContext dbContext,
-    UserManager<ApplicationDbContext> userManager,
+    UserManager<ApplicationUser> userManager,
     ILogger<RoleManagerService> logger,
     RoleManager<ApplicationRole> userRoles)  : IRoleManagementService
 {
@@ -90,7 +89,7 @@ public class RoleManagerService(
     {
         //1. Validate user id
         if (userId == Guid.Empty)
-        {
+        {                                               
             logger.LogError("Invalid user id: {UserId}", userId);
             return ResponseType<List<string>>.Fail("Invalid user id");
         }
