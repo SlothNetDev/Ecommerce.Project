@@ -168,21 +168,18 @@ namespace Ecommerce.Api
 
             if (!builder.Environment.IsEnvironment("Testing"))
             {
-                // 1. Get the dedicated connection string
-                var hangfireConnectionString = builder.Configuration.GetConnectionString("HangfireDbConnection");
+                var hangfireConnectionString =
+                    builder.Configuration.GetConnectionString("HangfireDbConnection");
 
-                if (string.IsNullOrWhiteSpace(hangfireConnectionString))
+                if (!string.IsNullOrWhiteSpace(hangfireConnectionString))
                 {
-                    throw new NullReferenceException("Hangfire connection string is missing. Please set 'HangfireDbConnection'.");
+                    builder.Services.AddHangfire(config =>
+                    {
+                        config.UseSqlServerStorage(hangfireConnectionString);
+                    });
+
+                    builder.Services.AddHangfireServer();
                 }
-
-                builder.Services.AddHangfire(config =>
-                {
-                    // 2. Use the dedicated connection string for Hangfire storage
-                    config.UseSqlServerStorage(hangfireConnectionString);
-                });
-
-                builder.Services.AddHangfireServer();
             }
 
             #endregion
@@ -200,8 +197,11 @@ namespace Ecommerce.Api
                 });
             }
 
-            //call hangfire
-            app.UseHangfireDashboard(); //add hangfire url(background url)
+            if (!app.Environment.IsEnvironment("Testing"))
+            {
+                app.UseHangfireDashboard();
+            }
+
             //adding global middleware
             app.UseMiddleware<MiddlewareException>();
 
