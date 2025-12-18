@@ -212,7 +212,7 @@ namespace Ecommerce.Infrastructure.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("User");
+                    b.ToTable("User", (string)null);
                 });
 
             modelBuilder.Entity("Ecommerce.Infrastructure.Identity.Entities.ApplicationRole", b =>
