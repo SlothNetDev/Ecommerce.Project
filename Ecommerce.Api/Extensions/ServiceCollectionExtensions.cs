@@ -167,28 +167,35 @@ public static class ServiceCollectionExtensions
     
     private static void JwtBearerService(IConfiguration configuration, IServiceCollection service)
     {
-        service.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
-        service.AddSingleton(sp => sp.GetRequiredService<IOptions<JwtSettings>>().Value);
-
-        var jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSettings>()
-                          ?? throw new InvalidOperationException("JwtSettings configuration section is missing.");
+        service
+            .AddOptions<JwtSettings>()
+            .Bind(configuration.GetSection("JwtSettings"))
+            .ValidateDataAnnotations()
+            .Validate(
+                s => !string.IsNullOrWhiteSpace(s.Key),
+                "Jwt Key must be provided"
+            )
+            .ValidateOnStart();
             
-        service.AddAuthentication(options =>
+        service.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-            {
+                var jwtSettings = configuration
+                    .GetRequiredSection("JwtSettings")
+                    .Get<JwtSettings>();
+
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
-                    ValidateLifetime = false,
+                    ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtSettings.Issuer,
+
+                    ValidIssuer = jwtSettings!.Issuer,
                     ValidAudience = jwtSettings.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwtSettings.Key)
+                    )
                 };
             });
 
