@@ -7,7 +7,7 @@ using Ecommerce.Shared.CatalogDto.Category;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Ecommerce.Api.Controllers
+namespace Ecommerce.UI.Controllers
 {
     [Route("api/[controller]")]
     public class CategoriesController(ApplicationDbContext dbContext) : ControllerBase
