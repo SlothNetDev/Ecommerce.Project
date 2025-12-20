@@ -1,5 +1,4 @@
-﻿using System.Data.Common;
-using System.Text;
+﻿using System.Text;
 using Ecommerce.Core;
 using Ecommerce.Core.Application.Common.Interfaces;
 using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
@@ -18,13 +17,11 @@ using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Resend;
 using Serilog;
 
-namespace Ecommerce.Api.Extensions;
+namespace Ecommerce.UI.Extensions;
 
 public static class ServiceCollectionExtensions
 {
@@ -34,21 +31,11 @@ public static class ServiceCollectionExtensions
         #region  Prerequisites for app to run
         // Add services to the container.
 
-        services.AddControllers();
+        services.AddControllersWithViews();
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
-
-        //Add api docs
-        services.AddSwaggerGen(options =>
-        {
-            options.SwaggerDoc("v1", new OpenApiInfo
-            {
-                Title = "Ecommerce API",
-                Version = "v1",
-                Description = "API For Ecommerce"
-            });
-        });
+        
         #endregion
         
         //use the validation service
