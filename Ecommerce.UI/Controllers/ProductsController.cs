@@ -4,11 +4,11 @@ using Ecommerce.Shared.CatalogDto.Product;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Ecommerce.Api.Controllers
+namespace Ecommerce.UI.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ProductsController(ApplicationDbContext dbContext, IWebHostEnvironment environment) : ControllerBase
+    [Route("[controller]")]
+    public class ProductsController(ApplicationDbContext dbContext,
+        IWebHostEnvironment environment) : Controller
     {
         // GET: api/<ProductsController>
         [HttpGet]
