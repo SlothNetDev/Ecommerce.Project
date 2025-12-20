@@ -17,7 +17,7 @@ public interface IOtpService
     /// A task that returns true if the OTP was generated and stored successfully,
     /// false otherwise (e.g., if email is invalid or storage fails).
     /// </returns>
-    Task<bool> GenerateOtpAsync(string email);
+    Task<string> GenerateOtpAsync(string email);
 
     /// <summary>
     /// Validates the provided OTP code against the stored OTP for the given email.
