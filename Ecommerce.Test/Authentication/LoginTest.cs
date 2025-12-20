@@ -29,7 +29,7 @@ namespace Ecommerce.Test.Authentication;
 public class LoginTest : TestBase
 {
     private readonly HttpClient _client;
-    private const string LoginEndpoint = "/api/auth/action/login";
+    private const string LoginEndpoint = "/api/auth/login";
     private readonly AssertApiHelper _assert;
     private readonly ITestOutputHelper _output;
 
