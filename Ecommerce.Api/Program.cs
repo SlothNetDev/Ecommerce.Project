@@ -9,13 +9,13 @@ namespace Ecommerce.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.AddCleanSerilog()
-                .Services
-                .AddPresentationService(builder.Configuration);
+          
+          
+          
             
             var app = builder.Build();
 
-            await app.ConfigureApplication();
+           
             
             await app.RunAsync();
         }
