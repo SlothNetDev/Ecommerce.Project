@@ -1,12 +1,15 @@
 using Ecommerce.Core.Application.Common.Interfaces;
 using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Core.Application.Common.Interfaces.Login;
+using Ecommerce.Core.Application.Common.Interfaces.Notification;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Infrastructure.Identity.Entities;
+using Ecommerce.Infrastructure.Identity.Services.Register;
 using Ecommerce.Shared.AuthenticationDTO;
 using Ecommerce.Shared.RegisterDto;
 using Ecommerce.Shared.TokenDTO;
 using Ecommerce.Shared.Wrapper;
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -15,12 +18,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace Ecommerce.Api.Controllers;
 
 [ApiController]
-[Route("api/auth/action")]
+[Route("api/auth")]
 public class AuthenticationController(
     ITokenRefreshService refreshTokenService,
     IAuthenticationService authenticationService,
     IUserRegistrationService userRegistrationService,
-    ILogger<AuthenticationController> logger) : ControllerBase
+    ILogger<AuthenticationController> logger,
+    IOtpService otpService) : ControllerBase
 {
     /// <summary>
     /// Authenticates a user and returns an access token
@@ -77,38 +81,11 @@ public class AuthenticationController(
                 Status = StatusCodes.Status400BadRequest
             });
         }
-
+        
         logger.LogInformation("User registered successfully: {Email}", request?.Email);
-        return Ok(result); // 200 OK with registration status
+        return Accepted(result); // 200 OK with registration status
     }
-
-    /// <summary>
-    /// Verifies user's email address using OTP code
-    /// </summary>
-    /// <param name="request">Email verification request with OTP code</param>
-    /// <returns>200 OK on successful verification, 400 Bad Request on validation errors</returns>
-    [AllowAnonymous]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [HttpPost("verify-email")]
-    public async Task<IActionResult> VerifyEmail([FromBody] EmailVerificationRequestDto request)
-    {
-        var result = await userRegistrationService.VerifyEmailAsync(request);
-
-        if (!result.Success)
-        {
-            logger.LogInformation("Email verification failed for {Email}: {Message}", request?.Email, result.Message);
-            return BadRequest(new ProblemDetails
-            {
-                Title = "Email Verification Failed",
-                Detail = result.Message,
-                Status = StatusCodes.Status400BadRequest
-            });
-        }
-
-        logger.LogInformation("Email verified successfully for: {Email}", request?.Email);
-        return Ok(result); // 200 OK with success message
-    }
+    
 
     [HttpPost("RefreshToken")]
     [ProducesResponseType(typeof(TokenResponseDto), StatusCodes.Status200OK)]
