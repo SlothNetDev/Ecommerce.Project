@@ -21,6 +21,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Resend;
 using Serilog;
 
 namespace Ecommerce.Api.Extensions;
@@ -63,7 +64,7 @@ public static class ServiceCollectionExtensions
         IocContainer(services);
         
         //Add Grid service
-        GridService(configuration, services);
+        ResendEmail(configuration, services);
         
         //add jwt bearer service
         JwtBearerService(configuration, services);
@@ -136,34 +137,18 @@ public static class ServiceCollectionExtensions
 
         service.AddScoped<IEmailService, EmailService>();
     }
-    private static void GridService(IConfiguration configuration, IServiceCollection service)
+    private static void ResendEmail(IConfiguration configuration, IServiceCollection services)
     {
-        var serviceProvider = service.BuildServiceProvider();
-        var env = serviceProvider.GetRequiredService<IHostEnvironment>();
+        // 1. Register the HttpClient and Options
+        services.AddOptions();
+        services.AddHttpClient<ResendClient>();
+        services.AddOptions<EmailSettings>()
+            .Bind(configuration.GetSection("Resend"));
         
-        if (!env.IsEnvironment("Testing"))
-        {
-            var sendGridApiKey = configuration["SendGrid:ApiKey"];
-            var sendGridFromEmail = configuration["SendGrid:FromEmail"];
-            var sendGridFromName = configuration["SendGrid:FromName"] ?? "Your App";
-
-            if (string.IsNullOrWhiteSpace(sendGridApiKey))
-            {
-                throw new InvalidOperationException(
-                    "SendGrid API key is not configured. Please set 'SendGrid:ApiKey' in your configuration.");
-            }
-
-            if (string.IsNullOrWhiteSpace(sendGridFromEmail))
-            {
-                throw new InvalidOperationException(
-                    "SendGrid FromEmail is not configured. Please set 'SendGrid:FromEmail' in your configuration.");
-            }
-
-            service
-                .AddFluentEmail(sendGridFromEmail, sendGridFromName)
-                .AddSendGridSender(sendGridApiKey);
-        }
+        //register sdk client
+        services.AddTransient<IResend, ResendClient>();
     }
+    
     
     private static void JwtBearerService(IConfiguration configuration, IServiceCollection service)
     {
