@@ -1,6 +1,6 @@
+
 using System.Net;
 using System.Net.Http.Json;
-using Ecommerce.Api;
 using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
@@ -8,11 +8,11 @@ using Ecommerce.Shared.TokenDTO;
 using Ecommerce.Shared.Wrapper;
 using Ecommerce.Test.Authentication.Helpers;
 using Ecommerce.Test.TestUtilities;
+using Ecommerce.UI;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Ecommerce.Test.Authentication;
@@ -25,7 +25,7 @@ public class RefreshTokenTest :  TestBase
 {
     private readonly IRefreshTokenService _refreshTokenService;
     private readonly AssertApiHelper _assert;
-    private const string RefreshEndpoint = "/api/auth/action/RefreshToken";
+    private const string RefreshEndpoint = "/api/auth/RefreshToken";
     private readonly ITestOutputHelper _output;
 
     public RefreshTokenTest(CustomWebApplicationFactory<Program> factory, ITestOutputHelper output) : base(factory)
