@@ -4,11 +4,17 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>859e3020-9eb1-415b-ba25-fcd14b441eaf</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Ecommerce.Infrastructure\Ecommerce.Infrastructure.csproj" />
       <ProjectReference Include="..\Ecommerce.Shared\Ecommerce.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.22" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.22" />
     </ItemGroup>
 
 </Project>
