@@ -5,11 +5,10 @@ using Ecommerce.Shared.OrdersDto.OrderDto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Ecommerce.Api.Controllers;
+namespace Ecommerce.UI.Controllers;
 
 [ApiController]
-[Route("api/orders")]
-public class OrdersController(ApplicationDbContext dbContext) : ControllerBase
+public class OrdersController(ApplicationDbContext dbContext) : Controller
 {
     [HttpPost]
     public async Task<IActionResult> CreateOrder([FromBody] OrderRequestDto request)
