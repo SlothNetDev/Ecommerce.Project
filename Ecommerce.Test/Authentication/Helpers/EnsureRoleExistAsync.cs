@@ -1,6 +1,7 @@
 using Ecommerce.Api;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Test.TestUtilities;
+using Ecommerce.UI;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
