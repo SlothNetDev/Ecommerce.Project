@@ -1,4 +1,4 @@
-﻿using Ecommerce.Api.Middleware;
+﻿using Ecommerce.UI.Middleware;
 using Hangfire;
 
 namespace Ecommerce.UI.Extensions;
