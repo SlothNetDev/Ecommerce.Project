@@ -1,9 +1,7 @@
-﻿using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
-using Ecommerce.Core.Application.Common.Interfaces.Login;
-using Ecommerce.Core.Application.Common.Interfaces.Register;
+﻿
 using Ecommerce.Shared.AuthenticationDTO;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using IAuthenticationService = Ecommerce.Core.Application.Common.Interfaces.Login.IAuthenticationService;
 
 namespace Ecommerce.Api.Controllers;
 
@@ -11,11 +9,10 @@ public class AuthController(
     IAuthenticationService authenticationService,
     ILogger<AuthController> logger): Controller
 {
-
     [HttpGet]
-    public async Task<IActionResult> Login()
+    public Task<IActionResult> Login()
     {
-        return View();
+        return Task.FromResult<IActionResult>(View());
     }
     
     [HttpPost("login")]
