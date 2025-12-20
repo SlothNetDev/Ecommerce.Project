@@ -1,15 +1,15 @@
-﻿using Ecommerce.Infrastructure.Data;
+﻿
+// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+
+using Ecommerce.Core.Domain.Entities.Catalog;
+using Ecommerce.Infrastructure.Data;
 using Ecommerce.Shared.CatalogDto.Category;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Ecommerce.Core.Domain.Entities.Catalog;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Ecommerce.Api.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
     public class CategoriesController(ApplicationDbContext dbContext) : ControllerBase
     {
         // GET: api/<CategoryController>
