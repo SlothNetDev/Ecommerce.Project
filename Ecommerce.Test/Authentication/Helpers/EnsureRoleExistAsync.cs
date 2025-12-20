@@ -1,4 +1,3 @@
-using Ecommerce.Api;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Test.TestUtilities;
 using Ecommerce.UI;
