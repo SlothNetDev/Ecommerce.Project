@@ -32,9 +32,6 @@ public static class ServiceCollectionExtensions
         // Add services to the container.
 
         services.AddControllersWithViews();
-
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
         
         #endregion
         
