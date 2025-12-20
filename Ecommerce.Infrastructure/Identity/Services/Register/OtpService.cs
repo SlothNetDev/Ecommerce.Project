@@ -17,43 +17,35 @@ public class OtpService(ILogger<OtpService> logger) : IOtpService
     private readonly int _maxAttempts = 5; // Maximum verification attempts
 
     /// <inheritdoc/>
-    public async Task<bool> GenerateOtpAsync(string email)
+    public async Task<string> GenerateOtpAsync(string email)
     {
-        try
+        // Normalize email to lowercase for consistency
+        var normalizedEmail = email.ToLowerInvariant();
+
+        // Generate a 6-digit random OTP
+        var otpCode = OtpGenerator.GenerateOtp();
+
+        // Create OTP data
+        var otp = new OtpData
         {
-            // Normalize email to lowercase for consistency
-            var normalizedEmail = email.ToLowerInvariant();
+            Code = otpCode,
+            Email = normalizedEmail,
+            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.Add(_otpExpiration),
+            Attempts = 0,
+            IsUsed = false
+        };
 
-            // Generate a 6-digit random OTP
-            var otpCode = OtpGenerator.GenerateOtp();
+        // Store in memory (replace with Redis/database in production)
+        _otpStore[normalizedEmail] = otp;
 
-            // Create OTP data
-            var otpData = new OtpData
-            {
-                Code = otpCode,
-                Email = normalizedEmail,
-                CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.Add(_otpExpiration),
-                Attempts = 0,
-                IsUsed = false
-            };
+        // Clean up expired OTPs periodically
+        await CleanupExpiredOtpsAsync();
 
-            // Store in memory (replace with Redis/database in production)
-            _otpStore[normalizedEmail] = otpData;
+        logger.LogInformation("OTP generated for email: {Email}, expires at: {ExpiresAt}",
+            normalizedEmail, otp.ExpiresAt);
 
-            // Clean up expired OTPs periodically
-            await CleanupExpiredOtpsAsync();
-
-            logger.LogInformation("OTP generated for email: {Email}, expires at: {ExpiresAt}",
-                normalizedEmail, otpData.ExpiresAt);
-
-            return true;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Failed to generate OTP for email: {Email}", email);
-            return false;
-        }
+        return otp.Code;
     }
 
     /// <inheritdoc/>
