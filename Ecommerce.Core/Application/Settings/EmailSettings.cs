@@ -7,52 +7,32 @@ namespace Ecommerce.Core.Application.Settings;
 public class EmailSettings
 {
     /// <summary>
-    /// The email service provider to use (e.g., "Smtp", "SendGrid", "Mailgun").
+    /// Email provider name (e.g. "Resend")
     /// </summary>
-    public string Provider { get; set; } = "Smtp";
+    public string Provider { get; init; } = "Resend";
 
     /// <summary>
-    /// SMTP server hostname or IP address.
+    /// Default sender email address (must be verified in Resend)
     /// </summary>
-    public string SmtpServer { get; set; } = string.Empty;
+    public string FromEmail { get; init; } = string.Empty;
 
     /// <summary>
-    /// SMTP server port (typically 587 for TLS, 465 for SSL, 25 for plain).
+    /// Friendly sender display name
     /// </summary>
-    public int SmtpPort { get; set; } = 587;
+    public string FromName { get; init; } = "Ecommerce App";
 
     /// <summary>
-    /// Username for SMTP authentication.
+    /// Resend API Key (store in User Secrets / Key Vault)
     /// </summary>
-    public string SmtpUsername { get; set; } = string.Empty;
+    public string ApiKey { get; init; } = string.Empty;
 
     /// <summary>
-    /// Password for SMTP authentication.
+    /// Public base URL used in email links
     /// </summary>
-    public string SmtpPassword { get; set; } = string.Empty;
+    public string BaseUrl { get; init; } = string.Empty;
 
     /// <summary>
-    /// Whether to use SSL/TLS encryption.
+    /// OTP expiration window in minutes
     /// </summary>
-    public bool EnableSsl { get; set; } = true;
-
-    /// <summary>
-    /// The email address to use as the sender.
-    /// </summary>
-    public string FromEmail { get; set; } = string.Empty;
-
-    /// <summary>
-    /// The display name for the sender.
-    /// </summary>
-    public string FromName { get; set; } = "Your App";
-
-    /// <summary>
-    /// API key for cloud email providers (SendGrid, Mailgun, etc.).
-    /// </summary>
-    public string ApiKey { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Base URL for the application (used for generating links in emails).
-    /// </summary>
-    public string BaseUrl { get; set; } = string.Empty;
+    public int OtpExpiryMinutes { get; init; } = 10;
 }
