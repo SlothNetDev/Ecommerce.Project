@@ -1,5 +1,4 @@
 <Solution>
-  <Project Path="Ecommerce.Api/Ecommerce.Api.csproj" />
   <Project Path="Ecommerce.Core/Ecommerce.Core.csproj" />
   <Project Path="Ecommerce.Infrastructure/Ecommerce.Infrastructure.csproj" />
   <Project Path="Ecommerce.Shared/Ecommerce.Shared.csproj" />
