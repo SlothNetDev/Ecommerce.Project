@@ -8,13 +8,12 @@ public class AuthController(
     IAuthenticationService authenticationService,
     ILogger<AuthController> logger): Controller
 {
-    [HttpGet]
+    [HttpGet("login")]
     public Task<IActionResult> Login()
     {
         return Task.FromResult<IActionResult>(View());
     }
     
-    [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody]LoginRequestDto request)
     {
         var response = await authenticationService.LoginAsync(request);
