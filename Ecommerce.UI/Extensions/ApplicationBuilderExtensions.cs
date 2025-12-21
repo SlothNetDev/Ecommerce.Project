@@ -39,7 +39,7 @@ public static class ApplicationBuilderExtensions
         app.UseAuthorization();
         app.MapControllers();
 
-        app.Run();
+        await app.RunAsync();
         return app;
     }
 }
