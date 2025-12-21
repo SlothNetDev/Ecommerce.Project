@@ -8,7 +8,7 @@ namespace Ecommerce.UI.Controllers
 {
     [Route("[controller]")]
     public class ProductsController(ApplicationDbContext dbContext,
-        IWebHostEnvironment environment) : Controller
+        IWebHostEnvironment environment) : ControllerBase
     {
         // GET: api/<ProductsController>
         [HttpGet]
