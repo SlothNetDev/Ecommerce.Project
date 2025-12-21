@@ -13,11 +13,13 @@ using Ecommerce.Infrastructure.Identity.Services.JwtTokenService;
 using Ecommerce.Infrastructure.Identity.Services.Login;
 using Ecommerce.Infrastructure.Identity.Services.Register;
 using Ecommerce.Infrastructure.Notification;
+using FluentValidation.AspNetCore;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Resend;
 using Serilog;
 
@@ -31,9 +33,23 @@ public static class ServiceCollectionExtensions
         #region  Prerequisites for app to run
         // Add services to the container.
 
-        services.AddControllersWithViews();
+        services.AddControllers();
+        services.AddEndpointsApiExplorer();
+        
+        services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "Ecommerce API",
+                Version = "v1",
+                Description = "API For Ecommerce"
+            });
+        });
+
         
         #endregion
+        //fluent api
+        services.AddFluentValidationAutoValidation();
         
         //use the validation service
         services.AddInfrastructure();
