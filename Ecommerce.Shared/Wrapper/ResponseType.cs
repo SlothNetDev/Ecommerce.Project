@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Ecommerce.Shared.Enums;
 
 namespace Ecommerce.Shared.Wrapper
 {
@@ -21,7 +22,8 @@ namespace Ecommerce.Shared.Wrapper
 
         [JsonPropertyName("errors")]
         public List<string> Errors { get; set; } = new();
-    
+        
+        public FailureType? FailureType { get; set; }
         // Factory methods (for clean creation)
         public static ResponseType<T> SuccessResult(T data, string message) => new()
         {
@@ -35,19 +37,24 @@ namespace Ecommerce.Shared.Wrapper
             Message = message
         };
         
-        public static ResponseType<T> Fail(string message, string? additionalMessage = null) => new()
+        public static ResponseType<T> Fail(string message,
+            FailureType type,
+            string? additionalMessage = null) => new()
         {
             Success = false,
+            FailureType = type,
             Message = message,
             Data = default! 
         };
         
         //contains many error
-        public static ResponseType<T> Fail(List<string> errors,string message) => new()
+        public static ResponseType<T> Fail(List<string> errors,string message,
+            FailureType type) => new()
         {
             Success = false,
             Message = message,
-            Errors = errors
+            Errors = errors,
+            FailureType = type
         };
     
         // Instance methods (for fluent-style building)
