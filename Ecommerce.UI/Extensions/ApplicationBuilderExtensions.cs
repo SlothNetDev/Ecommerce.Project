@@ -1,5 +1,8 @@
-﻿using Ecommerce.UI.Middleware;
+﻿using Ecommerce.Infrastructure.Data.Seeders;
+using Ecommerce.Infrastructure.Identity.Entities;
+using Ecommerce.UI.Middleware;
 using Hangfire;
+using Microsoft.AspNetCore.Identity;
 
 namespace Ecommerce.UI.Extensions;
 
@@ -14,7 +17,17 @@ public static class ApplicationBuilderExtensions
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
             app.UseHangfireDashboard();
+            
+            //Seed Roles for request (skip in Testing environment - handled by test factory)
+            using(var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
+
+                await IdentitySeeder.SeedRolesAsync(roleManager);
+            }
         }
+        
 
         app.UseHttpsRedirection();
         app.UseStaticFiles();
