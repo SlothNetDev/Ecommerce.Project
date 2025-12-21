@@ -57,10 +57,10 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
             
             builder.ConfigureServices(services =>
             {
-                // Replace the real sender so tests never hit SendGrid
+                /*// Replace the real sender so tests never hit SendGrid
                 services.RemoveAll<ISender>();
                 services.AddSingleton<ISender, NoOpEmailSender>();
-                /*services.RemoveAll<IBackgroundJobService>();
+                services.RemoveAll<IBackgroundJobService>();
                 services.AddSingleton<IBackgroundJobService, FakeBackgroundJobService>();*/
 
             });
@@ -88,24 +88,7 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
             });
         });
     }
-    private sealed class NoOpEmailSender : ISender
-    {
-        public Task SendAsync(FluentEmail.Core.Email email, CancellationToken token = default)
-        {
-            // Intentionally do nothing (tests should assert behavior without sending)
-            return Task.CompletedTask;
-        }
 
-        public SendResponse Send(IFluentEmail email, CancellationToken? token = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<SendResponse> SendAsync(IFluentEmail email, CancellationToken? token = null)
-        {
-            throw new NotImplementedException();
-        }
-    }
     
     //Program.cs 
     protected override IHost CreateHost(IHostBuilder builder)
