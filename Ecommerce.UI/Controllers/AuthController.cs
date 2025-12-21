@@ -6,13 +6,8 @@ namespace Ecommerce.UI.Controllers;
 
 public class AuthController(
     IAuthenticationService authenticationService,
-    ILogger<AuthController> logger): Controller
+    ILogger<AuthController> logger): ControllerBase
 {
-    [HttpGet("login")]
-    public Task<IActionResult> Login()
-    {
-        return Task.FromResult<IActionResult>(View());
-    }
     
     public async Task<IActionResult> Login([FromBody]LoginRequestDto request)
     {
