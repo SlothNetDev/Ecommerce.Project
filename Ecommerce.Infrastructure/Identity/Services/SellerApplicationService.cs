@@ -189,7 +189,7 @@ public class SellerApplicationService(
         var roleResult = await roleManagementService
             .ChangeUserRole(
                 userId: application.SellerId,
-                newRole: RoleSeeder.Costumer,
+                newRole: RoleSeeder.Customer,
                 changedBy: request.AdminId,
                 reason: "Seller Application Rejected by admin"
             );
