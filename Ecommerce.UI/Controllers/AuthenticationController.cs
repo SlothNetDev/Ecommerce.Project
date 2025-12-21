@@ -4,9 +4,9 @@ using IAuthenticationService = Ecommerce.Core.Application.Common.Interfaces.Logi
 
 namespace Ecommerce.UI.Controllers;
 
-public class AuthController(
+public class AuthenticationController(
     IAuthenticationService authenticationService,
-    ILogger<AuthController> logger): ControllerBase
+    ILogger<AuthenticationController> logger): ControllerBase
 {
     
     public async Task<IActionResult> Login([FromBody]LoginRequestDto request)
