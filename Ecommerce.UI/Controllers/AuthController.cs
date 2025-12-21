@@ -1,9 +1,8 @@
-﻿
-using Ecommerce.Shared.AuthenticationDTO;
+﻿using Ecommerce.Shared.AuthenticationDTO;
 using Microsoft.AspNetCore.Mvc;
 using IAuthenticationService = Ecommerce.Core.Application.Common.Interfaces.Login.IAuthenticationService;
 
-namespace Ecommerce.Api.Controllers;
+namespace Ecommerce.UI.Controllers;
 
 public class AuthController(
     IAuthenticationService authenticationService,
