@@ -4,7 +4,7 @@ namespace Ecommerce.UI;
 
 public class Program
 {
-    public async Task Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
         
@@ -16,6 +16,6 @@ public class Program
 
         await app.ConfigureApplication();
 
-        await app.RunAsync();
+       await app.RunAsync();
     }
 }
