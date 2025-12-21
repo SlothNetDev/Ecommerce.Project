@@ -1,5 +1,6 @@
 using Ecommerce.Core.Application.Common.Interfaces.Notification;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
+using Ecommerce.Infrastructure.Data.Seeders;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Shared.AuthenticationDTO;
 using Ecommerce.Shared.Enums;
@@ -75,7 +76,7 @@ public class UserRegistrationService(
             }
 
             // 4. Assign default role
-            var roleResult = await userManager.AddToRoleAsync(user, "Customer");
+            var roleResult = await userManager.AddToRoleAsync(user, RoleSeeder.Customer);
             if (!roleResult.Succeeded)
             {
                 var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
