@@ -5,6 +5,7 @@ using Ecommerce.Core.Application.Common.Interfaces;
 using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Core.Application.Settings;
+using Ecommerce.Infrastructure.Data.Seeders;
 using Ecommerce.Shared.TokenDTO;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -48,7 +49,7 @@ public class TokenService(IOptions<JwtSettings> jwtSettings,
             // Standard identifiers
             new Claim(JwtRegisteredClaimNames.Sub, user.UserId),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
-
+            
             //human friendly name
             new Claim("username", user.UserName),
 
