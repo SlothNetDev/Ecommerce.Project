@@ -2,16 +2,16 @@
 using Ecommerce.Shared.RegisterDto;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Ecommerce.Api.Controllers;
+namespace Ecommerce.Api.Controllers.DashboardControllers;
 [ApiController]
-[Route("api/[controller]/[action]")]
+[Route("api/dashboard")]
 public class RegisterController(
     IUserRegistrationService registrationService,
     ILogger<RegisterController> logger) : ControllerBase
 {
 
-    [HttpPost]
-   public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
+    [HttpPost("register")]
+   public async Task<IActionResult> SignInAsync([FromBody] RegisterRequestDto request)
    {
        var response = await registrationService.RegisterAsync(request);
        if (!response.Success)
@@ -27,9 +27,8 @@ public class RegisterController(
                    Status = StatusCodes.Status400BadRequest
                });
            }
-           logger.LogInformation("User {Email} registered successfully", request.Email);
-           
        }
-       return Ok(response);
+       logger.LogInformation("User {Email} registered successfully", request.Email);
+       return StatusCode(StatusCodes.Status201Created, response);
     }
 }
