@@ -4,7 +4,7 @@ using Ecommerce.Shared.CatalogDto.Product;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Ecommerce.UI.Controllers
+namespace Ecommerce.Api.Controllers
 {
     [Route("[controller]")]
     public class ProductsController(ApplicationDbContext dbContext,

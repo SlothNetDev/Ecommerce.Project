@@ -5,7 +5,7 @@ using Ecommerce.Shared.OrdersDto.OrderDto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Ecommerce.UI.Controllers;
+namespace Ecommerce.Api.Controllers;
 
 [ApiController]
 public class OrdersController(ApplicationDbContext dbContext) : ControllerBase

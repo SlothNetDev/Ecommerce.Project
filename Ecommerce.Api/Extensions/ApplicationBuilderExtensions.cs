@@ -1,10 +1,10 @@
-﻿using Ecommerce.Infrastructure.Data.Seeders;
+﻿using Ecommerce.Api.Middleware;
+using Ecommerce.Infrastructure.Data.Seeders;
 using Ecommerce.Infrastructure.Identity.Entities;
-using Ecommerce.UI.Middleware;
 using Hangfire;
 using Microsoft.AspNetCore.Identity;
 
-namespace Ecommerce.UI.Extensions;
+namespace Ecommerce.Api.Extensions;
 
 public static class ApplicationBuilderExtensions
 {

@@ -2,13 +2,15 @@
 using Microsoft.AspNetCore.Mvc;
 using IAuthenticationService = Ecommerce.Core.Application.Common.Interfaces.Login.IAuthenticationService;
 
-namespace Ecommerce.UI.Controllers;
+namespace Ecommerce.Api.Controllers;
 
+[ApiController]
+[Route("api/[controller]/[action]")]
 public class AuthenticationController(
     IAuthenticationService authenticationService,
     ILogger<AuthenticationController> logger): ControllerBase
 {
-    
+    [HttpPost]
     public async Task<IActionResult> Login([FromBody]LoginRequestDto request)
     {
         var response = await authenticationService.LoginAsync(request);

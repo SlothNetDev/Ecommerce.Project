@@ -8,7 +8,7 @@ using Ecommerce.Shared.TokenDTO;
 using Ecommerce.Shared.Wrapper;
 using Ecommerce.Test.Authentication.Helpers;
 using Ecommerce.Test.TestUtilities;
-using Ecommerce.UI;
+using Ecommerce.Api;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

@@ -1,6 +1,6 @@
-using Ecommerce.UI.Extensions;
+using Ecommerce.Api.Extensions;
 
-namespace Ecommerce.UI;
+namespace Ecommerce.Api;
 
 public class Program
 {

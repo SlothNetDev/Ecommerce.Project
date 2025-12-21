@@ -1,7 +1,7 @@
 ﻿using Ecommerce.Infrastructure.Identity.Services.Register;
 using Ecommerce.Shared.Enums;
 using Ecommerce.Test.TestUtilities;
-using Ecommerce.UI;
+using Ecommerce.Api;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit.Abstractions;

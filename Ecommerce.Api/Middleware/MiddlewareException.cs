@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text.Json;
 
-namespace Ecommerce.UI.Middleware;
+namespace Ecommerce.Api.Middleware;
 
 public class MiddlewareException(RequestDelegate next, ILogger<MiddlewareException> logger)
 {

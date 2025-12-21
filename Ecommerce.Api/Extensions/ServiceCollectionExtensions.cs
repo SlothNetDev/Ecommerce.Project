@@ -23,7 +23,7 @@ using Microsoft.OpenApi.Models;
 using Resend;
 using Serilog;
 
-namespace Ecommerce.UI.Extensions;
+namespace Ecommerce.Api.Extensions;
 
 public static class ServiceCollectionExtensions
 {
