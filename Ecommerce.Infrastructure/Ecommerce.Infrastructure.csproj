@@ -41,6 +41,7 @@
 
   <ItemGroup>
     <Folder Include="Data\Repository\" />
+    <Folder Include="Identity\Services\CookieToken\" />
   </ItemGroup>
 
 </Project>
