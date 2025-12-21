@@ -10,7 +10,8 @@ public class IdentitySeeder
     /// </summary>
     public static async Task SeedRolesAsync(RoleManager<ApplicationRole> roleManager)
     {
-        string[] roles = new[] { "Admin", "Costumer", "Seller" };
+        
+        string[] roles = new[] { RoleSeeder.Admin,RoleSeeder.Seller,RoleSeeder.Customer};
 
         foreach (var role in roles)
         {
