@@ -10,7 +10,7 @@ namespace Ecommerce.UI.Controllers;
 [ApiController]
 public class OrdersController(ApplicationDbContext dbContext) : Controller
 {
-    [HttpPost]
+    [HttpPost("create")]
     public async Task<IActionResult> CreateOrder([FromBody] OrderRequestDto request)
     {
         // UserId is required by the entity but not in DTO. 
