@@ -31,4 +31,9 @@ public class TestBase : IClassFixture<CustomWebApplicationFactory<Program>>
 
         return client;
     }
+
+    protected void Dispose()
+    {
+        _client.Dispose();
+    }
 }
