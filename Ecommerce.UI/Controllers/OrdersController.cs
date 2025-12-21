@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Ecommerce.UI.Controllers;
 
 [ApiController]
-public class OrdersController(ApplicationDbContext dbContext) : Controller
+public class OrdersController(ApplicationDbContext dbContext) : ControllerBase
 {
     [HttpPost("create")]
     public async Task<IActionResult> CreateOrder([FromBody] OrderRequestDto request)
