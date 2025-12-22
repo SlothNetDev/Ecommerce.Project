@@ -3,6 +3,7 @@ using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
+using Ecommerce.Shared.Enums;
 using Ecommerce.Shared.TokenDTO;
 using Ecommerce.Shared.Wrapper;
 using Microsoft.AspNetCore.Identity;
@@ -27,7 +28,9 @@ public class TokenRefreshService(
         {
             logger.LogWarning("Refresh token attempt with unknown IP. Token: {Token}", 
                 request.RefreshToken);
-            return ResponseType<TokenResponseDto>.Fail("Unable to verify request origin");
+            return ResponseType<TokenResponseDto>.Fail(
+                "Unable to verify request origin",
+                FailureType.Validation);
         }
         
         //2. Validate refresh token exist or is active
@@ -36,7 +39,9 @@ public class TokenRefreshService(
         {
             logger.LogWarning("Invalid refresh token used: {Token}, IP: {IP}", 
                 request.RefreshToken, currentIp);
-            return ResponseType<TokenResponseDto>.Fail("Invalid refresh token");
+            return ResponseType<TokenResponseDto>.Fail(
+                "Invalid refresh token",
+                FailureType.Validation);
         }
             
         //3. Perform the enhanced Validation with IP address 
@@ -46,7 +51,8 @@ public class TokenRefreshService(
         {
             logger.LogWarning("Refresh token validation failed: {Token}, IP: {IP}, Reason: {Reason}", 
                 request.RefreshToken, currentIp, validationResult.Message);
-            return ResponseType<TokenResponseDto>.Fail("Invalid refresh token");
+            return ResponseType<TokenResponseDto>.Fail("Invalid refresh token",
+                FailureType.Validation, validationResult.Message);
         }
         
         
@@ -58,7 +64,8 @@ public class TokenRefreshService(
         if (storedToken is null)
         {
             logger.LogError("Refresh token not found in database: {Token}", request.RefreshToken);
-            return ResponseType<TokenResponseDto>.Fail("Refresh token not found");
+            return ResponseType<TokenResponseDto>.Fail("Refresh token not found",
+                FailureType.Authentication);
         }
         
         // 5. Security check: IP address changed (potential token theft)
@@ -105,7 +112,10 @@ public class TokenRefreshService(
                 storedToken.User.Email, 
                 currentIp);
             
-            return ResponseType<TokenResponseDto>.Fail("Refresh Token Rotation Failed");
+            return ResponseType<TokenResponseDto>.Fail(
+                "Refresh Token Rotation Failed",
+                FailureType.Authentication, 
+                rotationToken.Message);
         }
         if (storedToken.CreatedByIp != currentIp)
         {
