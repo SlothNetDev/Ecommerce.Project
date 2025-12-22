@@ -211,19 +211,18 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
         }
 
         // 3. Check for IP address change
-        if (entity.CreatedByIp != clientIp)
+        if (entity.Revoked.HasValue  &&  entity.RevocationReason == "Rotated")
         {
-            logger.LogWarning(
-                "Token used from different IP. " +
-                "UserId: {UserId}, Original: {OriginalIP}, Current: {CurrentIP}",
-                entity.UserId, 
-                entity.CreatedByIp, 
-                clientIp);
-
-            // For Level 2: log but allow (user might be traveling, switched networks, etc.)
-            // For Level 3: would require re-authentication
+            var secondsSinceRevocation = (DateTime.UtcNow - entity.Revoked.Value).TotalSeconds;
+            if (secondsSinceRevocation < 30) 
+            {
+                logger.LogInformation("Grace period hit for Token: {TokenId}", entity.TokenId);
+                return ResponseType<bool>.SuccessResult(true, "Grace period active");
+            }
         }
-
+        if (!entity.IsActive)
+            return ResponseType<bool>.Fail("Token expired/revoked", FailureType.Authentication);
+        
         // 4. Check if current IP is suspicious
         if (ipAddressService.IsSuspiciousIp(clientIp))
         {
