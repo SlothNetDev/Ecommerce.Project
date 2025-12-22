@@ -4,6 +4,7 @@ using Ecommerce.Core.Application.Settings;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Shared.AuthenticationDTO;
+using Ecommerce.Shared.Enums;
 using Ecommerce.Shared.TokenDTO;
 using Ecommerce.Shared.Wrapper;
 using Microsoft.AspNetCore.Identity;
@@ -30,6 +31,7 @@ public class AuthenticationService(
             logger.LogError("LOG_002: Login attempt for non-existent email: {Email}", request.Email);
             return ResponseType<AuthenticationResponseDto>.Fail(
                 "InvalidCredentials",
+                FailureType.Authentication,
                 "Login failed. Invalid email or password."
             );
         }
@@ -43,6 +45,7 @@ public class AuthenticationService(
                 user.Id, request.Email);
             return ResponseType<AuthenticationResponseDto>.Fail(
                 "InvalidCredentials",
+                FailureType.Authentication,
                 "Login failed. Invalid email or password."
             );
         }
@@ -74,7 +77,10 @@ public class AuthenticationService(
         if (!refreshTokenResult.Success)
         {
             logger.LogWarning("LOG_004: Refresh token expired: {reason}", refreshTokenResult.Message);
-            return ResponseType<AuthenticationResponseDto>.Fail("Refresh Token Failed.}");
+            return ResponseType<AuthenticationResponseDto>.Fail(
+                "Refresh Token Failed.}",
+                FailureType.Authentication,
+                refreshTokenResult.Message);
         }
         
         //8. Calculate  expiration date of token
