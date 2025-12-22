@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
+using Ecommerce.Shared.Enums;
 using Ecommerce.Shared.TokenDTO;
 using Ecommerce.Shared.Wrapper;
 using Microsoft.EntityFrameworkCore;
@@ -59,7 +60,8 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
         if (entity == null)
         {
             logger.LogWarning("Refresh token not found");
-            return ResponseType<RefreshTokenResponseDto>.Fail("Token not found");
+            return ResponseType<RefreshTokenResponseDto>.Fail("Token not found",
+                FailureType.Authentication);
         }
 
         return ResponseType<RefreshTokenResponseDto>.SuccessResult(
@@ -79,7 +81,8 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
             .FirstOrDefaultAsync(x => x.Token == token);
 
         if (entity == null)
-            return ResponseType<string>.Fail("Token not found");
+            return ResponseType<string>.Fail("Token not found",
+                FailureType.Authentication);
 
         if (entity.Revoked.HasValue)
             return ResponseType<string>.SuccessResult("Already revoked", "Token already revoked");
@@ -106,13 +109,16 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
         // 2. Get and validate old token
         var oldTokenResult = await GetRefreshTokenAsync(oldToken);
         if (!oldTokenResult.Success)
-            return ResponseType<RefreshTokenResponseDto>.Fail(oldTokenResult.Message);
+            return ResponseType<RefreshTokenResponseDto>.Fail(oldTokenResult.Message,
+                FailureType.Authentication);
 
         var oldTokenEntity = await dbContext.RefreshToken
             .FirstOrDefaultAsync(x => x.Token == oldToken);
 
         if (oldTokenEntity == null || !oldTokenEntity.IsActive)
-            return ResponseType<RefreshTokenResponseDto>.Fail("Invalid or expired token");
+            return ResponseType<RefreshTokenResponseDto>.Fail(
+                "Invalid or expired token",
+                FailureType.Authentication);
 
         // 3. SECURITY CHECK: Detect IP address changes (potential token theft)
         if (oldTokenEntity.CreatedByIp != clientIp)
@@ -163,7 +169,8 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
             clientIp); // Pass validated IP
 
         if (!newTokenResult.Success)
-            return ResponseType<RefreshTokenResponseDto>.Fail("Failed to generate new token");
+            return ResponseType<RefreshTokenResponseDto>.Fail("Failed to generate new token",
+                FailureType.Authentication);
 
         // 7. Link old token to new one
         oldTokenEntity.ReplacedByToken = newTokenResult.Data.Token;
@@ -199,7 +206,8 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
 
         if (entity == null || !entity.IsActive)
         {
-            return ResponseType<bool>.Fail("Invalid or expired token");
+            return ResponseType<bool>.Fail("Invalid or expired token",
+                FailureType.Authentication);
         }
 
         // 3. Check for IP address change
