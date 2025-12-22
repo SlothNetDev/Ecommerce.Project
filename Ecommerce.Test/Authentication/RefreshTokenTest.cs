@@ -25,7 +25,7 @@ public class RefreshTokenTest :  TestBase
 {
     private readonly IRefreshTokenService _refreshTokenService;
     private readonly AssertApiHelper _assert;
-    private const string RefreshEndpoint = "/api/auth/RefreshToken";
+    private const string RefreshEndpoint = "api/dashboard/refresh";
     private readonly ITestOutputHelper _output;
 
     public RefreshTokenTest(CustomWebApplicationFactory<Program> factory, ITestOutputHelper output) : base(factory)
@@ -189,7 +189,7 @@ public class RefreshTokenTest :  TestBase
         // ============================================================
         // STEP 5: Assert - Second attempt should be rejected
         // ============================================================
-        Assert.Equal(HttpStatusCode.BadRequest, secondResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, secondResponse.StatusCode);
 
         var secondTyped = await secondResponse.Content.ReadFromJsonAsync<ProblemDetails>();
         _output.WriteLine($"✓ Expected failure: {System.Text.Json.JsonSerializer.Serialize(secondTyped)}");
