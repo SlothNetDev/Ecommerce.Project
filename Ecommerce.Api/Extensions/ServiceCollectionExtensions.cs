@@ -154,14 +154,12 @@ public static class ServiceCollectionExtensions
     }
     private static void ResendEmail(IConfiguration configuration, IServiceCollection services)
     {
-        // 1. Register the HttpClient and Options
-        services.AddOptions();
-        services.AddHttpClient<ResendClient>();
         services.AddOptions<EmailSettings>()
             .Bind(configuration.GetSection("Resend"));
-        
-        //register sdk client
+
+        services.AddHttpClient<ResendClient>();
         services.AddTransient<IResend, ResendClient>();
+
     }
     
     
