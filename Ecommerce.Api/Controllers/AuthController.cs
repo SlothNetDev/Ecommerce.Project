@@ -26,7 +26,9 @@ public class AuthController(
     public async Task<IActionResult> LoginAsync([FromBody] LoginRequestDto request)
     {
         var response = await authenticationService.LoginAsync(request);
-        logger.LogInformation("User {Email} logged in successfully", request.Email);
+        logger.LogInformation(
+            response.Success? "User {Email} logged in successfully":
+            "User {Email} failed to send in {Email}", request.Email);
         return Ok(response);
     }
 
@@ -39,7 +41,9 @@ public class AuthController(
     public async Task<IActionResult> LogOutAsync([FromQuery] string token)
     {
         var response = await authenticationService.LogoutAsync(token);
-        logger.LogInformation("User logged out successfully");
+        logger.LogInformation(
+            response.Success?"User Token {token} logged out successfully":
+                "User failed to logout");
         return Ok(response);
     }
     #endregion
@@ -53,11 +57,11 @@ public class AuthController(
     [HttpPost("refresh-token")]
     public async Task<ActionResult<RefreshTokenResponseDto>> RefreshToken([FromBody]RefreshTokenRequestDto requestDto)
     {
-        logger.LogInformation("Processing token refresh request");
-
-        var result = await refreshToken.RefreshTokenAsync(requestDto);
-        logger.LogInformation("Token {token} refreshed successfully",result?.Data.AccessToken);
-        return Ok(result);
+        var response = await refreshToken.RefreshTokenAsync(requestDto);
+        logger.LogInformation(
+            response.Success? "Token {token} refreshed successfully" :
+            "Token {Token} Failed to refresh",response?.Data.AccessToken);
+        return Ok(response);
     }
     #endregion
     
@@ -71,7 +75,9 @@ public class AuthController(
     public async Task<IActionResult> RegisterAsync([FromBody] RegisterRequestDto request)
     {
         var response = await registrationService.RegisterAsync(request);
-        logger.LogInformation("User {Email} registered successfully", request.Email);
+        logger.LogInformation(
+            response.Success ? "User {Email} registered successfully" : "User {Email} registration failed", 
+            request.Email);
         return Ok(response);
     }
 
@@ -84,7 +90,9 @@ public class AuthController(
     public async Task<IActionResult> VerifyEmailAsync(EmailVerificationRequestDto email)
     {
         var response = await registrationService.VerifyEmailAsync(email);
-        logger.LogInformation("User {Email} verified successfully", email.Email);
+        logger.LogInformation(
+            response.Success? "User {Email} verified successfully {email.Email}" :
+                "User {Email} verification failed", email.Email);
         return Ok(response);
     }
 
@@ -97,7 +105,9 @@ public class AuthController(
     public async Task<IActionResult> ForgetPasswordAsync([FromRoute] string email)
     {
         var response = await registrationService.ForgotPasswordAsync(email);
-        logger.LogInformation("Password reset link sent to {Email}", email);
+        logger.LogInformation(
+            response.Success? "Password reset link sent to {Email} Successfully" :
+        "Password reset was failed",email);
         return Ok(response);
     }
     #endregion
