@@ -11,6 +11,9 @@ namespace Ecommerce.Infrastructure.Data.Configuration.Authentication
         {
             builder.ToTable("ApplicationUsers");
 
+            //set primary key
+            builder.HasKey(u => u.Id);
+            
             builder.Property(u => u.FirstName)
                 .HasMaxLength(100)
                 .IsRequired();
