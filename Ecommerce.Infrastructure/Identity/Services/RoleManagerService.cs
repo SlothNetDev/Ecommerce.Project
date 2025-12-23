@@ -1,6 +1,7 @@
 using Ecommerce.Core.Application.Common.Interfaces;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
+using Ecommerce.Shared.Enums;
 using Ecommerce.Shared.Wrapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
@@ -17,12 +18,14 @@ public class RoleManagerService(
          //1. Validate input
         if (userId == Guid.Empty)
         {
-            return ResponseType<bool>.Fail("Invalid user id");
+            return ResponseType<bool>.Fail("Invalid user id",
+                FailureType.Validation);
         }
 
         if (string.IsNullOrWhiteSpace(newRole))
         {
-            return ResponseType<bool>.Fail("Role name is required");
+            return ResponseType<bool>.Fail("Role name is required",
+                FailureType.Validation);
         }
 
         newRole = newRole.Trim();
@@ -32,7 +35,8 @@ public class RoleManagerService(
         if (user is null)
         {
             logger.LogError("User with id {UserId} not found", userId);
-            return ResponseType<bool>.Fail("User not found");
+            return ResponseType<bool>.Fail("User not found",
+                FailureType.NotFound);
         }
 
         //3. Ensure the target role exists
@@ -40,7 +44,8 @@ public class RoleManagerService(
         if (!roleExists)
         {
             logger.LogWarning("Role {Role} does not exist. UserId: {UserId}", newRole, userId);
-            return ResponseType<bool>.Fail($"Role '{newRole}' does not exist");
+            return ResponseType<bool>.Fail($"Role '{newRole}' does not exist",
+                FailureType.NotFound);
         }
 
         //4. Get current roles (async all the way; no .Result)
@@ -60,7 +65,8 @@ public class RoleManagerService(
             {
                 var errors = string.Join("; ", removeResult.Errors.Select(e => e.Description));
                 logger.LogError("Failed removing roles from user {UserId}. Errors: {Errors}", userId, errors);
-                return ResponseType<bool>.Fail("Failed to remove existing roles");
+                return ResponseType<bool>.Fail("Failed to remove existing roles",
+                    FailureType.Internal);
             }
         }
 
@@ -70,7 +76,8 @@ public class RoleManagerService(
         {
             var errors = string.Join("; ", addResult.Errors.Select(e => e.Description));
             logger.LogError("Failed adding role {Role} to user {UserId}. Errors: {Errors}", newRole, userId, errors);
-            return ResponseType<bool>.Fail("Failed to add new role");
+            return ResponseType<bool>.Fail("Failed to add new role",
+                FailureType.Internal);
         }
 
         //8. (Optional) Audit / persist change reason (depends on your schema)
@@ -91,7 +98,8 @@ public class RoleManagerService(
         if (userId == Guid.Empty)
         {                                               
             logger.LogError("Invalid user id: {UserId}", userId);
-            return ResponseType<List<string>>.Fail("Invalid user id");
+            return ResponseType<List<string>>.Fail("Invalid user id",
+                FailureType.Validation);
         }
         
         //2. look for user Id
@@ -99,7 +107,8 @@ public class RoleManagerService(
         if (user is null)
         {
             logger.LogError("User with id {UserId} not found", userId);
-            return ResponseType<List<string>>.Fail("User not found");
+            return ResponseType<List<string>>.Fail("User not found",
+                FailureType.NotFound);
         }
         
         //3. Return roles
