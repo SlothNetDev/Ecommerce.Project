@@ -41,6 +41,7 @@
 
   <ItemGroup>
     <Folder Include="Data\Repository\" />
+    <Folder Include="Services\BackgroundJobs\" />
   </ItemGroup>
 
 </Project>
