@@ -8,7 +8,18 @@ using Ecommerce.Shared.Enums;
 
 namespace Ecommerce.Shared.Wrapper
 {
-    public class ResponseType<T>
+    /// <summary>
+    /// Used for filters
+    /// </summary>
+    public interface IResult
+    {
+        bool Success { get; }
+        string? Message { get; }
+        List<string> Errors { get; }
+        FailureType? FailureType { get; }
+    }
+    
+    public class ResponseType<T> : IResult
     {
          // Properties (for direct property access when needed)
         [JsonPropertyName("success")]
