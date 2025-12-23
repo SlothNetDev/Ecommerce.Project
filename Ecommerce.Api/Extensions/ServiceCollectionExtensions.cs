@@ -235,11 +235,13 @@ public static class SerilogExtensions
             loggerConfiguration
                 .ReadFrom.Configuration(context.Configuration)
                 .ReadFrom.Services(services)
-
-                // Always good defaults
                 .Enrich.FromLogContext()
+                // These will stay in the JSON file but won't clutter the Console anymore
                 .Enrich.WithProperty("Application", context.HostingEnvironment.ApplicationName)
                 .Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName);
+
+            // Optional: You can force clear properties for the console here if you prefer 
+            // but the appsettings template change is usually enough.
         });
 
         return builder;
