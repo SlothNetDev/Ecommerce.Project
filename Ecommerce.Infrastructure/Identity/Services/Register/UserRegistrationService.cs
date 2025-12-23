@@ -36,6 +36,7 @@ public class UserRegistrationService(
                 logger.LogWarning("REG_001: Password mismatch for {Email}", request.Email);
                 return ResponseType<RegisterResponseDto>.Fail(
                     "PasswordMismatch",
+                    FailureType.Authentication,
                     "Password and confirmation password do not match.");
             }
 
@@ -51,7 +52,8 @@ public class UserRegistrationService(
                 else
                 {
                     return ResponseType<RegisterResponseDto>.Fail(
-                        "EmailAlreadyExists",
+                        "Email Already Exists",
+                        FailureType.Conflict,
                         "An account with this email already exists.");
                 }
             }
@@ -72,7 +74,10 @@ public class UserRegistrationService(
             {
                 var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
                 logger.LogError("REG_003: User creation failed for {Email}: {Errors}", request.Email, errors);
-                return ResponseType<RegisterResponseDto>.Fail("RegistrationFailed", errors);
+                return ResponseType<RegisterResponseDto>.Fail("Registration Failed",
+                    FailureType.Authentication,
+                    errors
+                    );
             }
 
             // 4. Assign default role
@@ -82,7 +87,9 @@ public class UserRegistrationService(
                 var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
                 logger.LogError("REG_004: Role assignment failed for {UserId}: {Errors}", user.Id, errors);
                 await userManager.DeleteAsync(user);
-                return ResponseType<RegisterResponseDto>.Fail("RoleAssignmentFailed", errors);
+                return ResponseType<RegisterResponseDto>.Fail("RoleAssignmentFailed",
+                    FailureType.Authorization,
+                     errors);
             }
 
             // 5. Generate OTP internally
@@ -93,6 +100,7 @@ public class UserRegistrationService(
                 await userManager.DeleteAsync(user);
                 return ResponseType<RegisterResponseDto>.Fail(
                     "OtpGenerationFailed",
+                    FailureType.Internal,
                     "Failed to generate verification code. Please try again.");
             }
 
@@ -120,41 +128,41 @@ public class UserRegistrationService(
     public async Task<ResponseType<string>> VerifyEmailAsync(EmailVerificationRequestDto request)
     {
         var validationResult = await otpService.ValidateOtpAsync(request.Email, request.VerificationCode);
-            switch (validationResult)
-            {
-                case OtpValidationResult.Valid:
-                    break;
-                case OtpValidationResult.Invalid:
-                    return ResponseType<string>.Fail("InvalidCode", "Verification code is incorrect.");
-                case OtpValidationResult.Expired:
-                    return ResponseType<string>.Fail("CodeExpired", "Verification code expired.");
-                case OtpValidationResult.TooManyAttempts:
-                    return ResponseType<string>.Fail("TooManyAttempts", "Too many attempts. Please wait before retrying.");
-                case OtpValidationResult.NotFound:
-                default:
-                    return ResponseType<string>.Fail("CodeNotFound", "No OTP found. Please register first.");
-            }
+        switch (validationResult)
+        {
+            case OtpValidationResult.Valid:
+                break;
+            case OtpValidationResult.Invalid:
+                return ResponseType<string>.Fail("InvalidCode", FailureType.Validation, "Verification code is incorrect.");
+            case OtpValidationResult.Expired:
+                return ResponseType<string>.Fail("CodeExpired", FailureType.Validation, "Verification code expired.");
+            case OtpValidationResult.TooManyAttempts:
+                return ResponseType<string>.Fail("TooManyAttempts", FailureType.Validation, "Too many attempts. Please wait before retrying.");
+            case OtpValidationResult.NotFound:
+            default:
+                return ResponseType<string>.Fail("CodeNotFound", FailureType.NotFound, "No OTP found. Please register first.");
+        }
 
-            var user = await userManager.FindByEmailAsync(request.Email);
-            if (user == null)
-                return ResponseType<string>.Fail("UserNotFound", "User account not found.");
+        var user = await userManager.FindByEmailAsync(request.Email);
+        if (user == null)
+            return ResponseType<string>.Fail("UserNotFound", FailureType.NotFound, "User account not found.");
 
-            // Confirm email internally
-            var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-            var confirmResult = await userManager.ConfirmEmailAsync(user, token);
-            if (!confirmResult.Succeeded)
-            {
-                var errors = string.Join(", ", confirmResult.Errors.Select(e => e.Description));
-                logger.LogError("VER_001: Email confirmation failed for {UserId}: {Errors}", user.Id, errors);
-                return ResponseType<string>.Fail("ConfirmationFailed", "Email confirmation failed.");
-            }
+        // Confirm email internally
+        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        var confirmResult = await userManager.ConfirmEmailAsync(user, token);
+        if (!confirmResult.Succeeded)
+        {
+            var errors = string.Join(", ", confirmResult.Errors.Select(e => e.Description));
+            logger.LogError("VER_001: Email confirmation failed for {UserId}: {Errors}", user.Id, errors);
+            return ResponseType<string>.Fail("ConfirmationFailed", FailureType.Internal, "Email confirmation failed.");
+        }
 
-            // Send welcome email asynchronously
-            var userName = $"{user.FirstName} {user.LastName}".Trim();
-            BackgroundJob.Enqueue<IEmailService>(email =>
-                email.SendWelcomeEmailAsync(user.Email, user.UserName, user.FirstName));
+        // Send welcome email asynchronously
+        var userName = $"{user.FirstName} {user.LastName}".Trim();
+        BackgroundJob.Enqueue<IEmailService>(email =>
+            email.SendWelcomeEmailAsync(user.Email, user.UserName, user.FirstName));
 
-            return ResponseType<string>.SuccessResult("Email verified successfully! Your account is now active.");
+        return ResponseType<string>.SuccessResult("Email verified successfully! Your account is now active.");
     }
 
 
@@ -175,7 +183,9 @@ public class UserRegistrationService(
     public Task<ResponseType<string>> ConfirmEmailAsync(string token, string email)
     {
         logger.LogWarning("LEGACY_001: Legacy ConfirmEmail called for {Email}", email);
-        return Task.FromResult(ResponseType<string>.Fail("MethodDeprecated", "Use VerifyEmailAsync with OTP codes."));
+        return Task.FromResult(ResponseType<string>.Fail("MethodDeprecated", 
+            FailureType.Authentication,
+            "Use VerifyEmailAsync with OTP codes."));
     }
 
    
