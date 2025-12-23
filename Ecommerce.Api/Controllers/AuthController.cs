@@ -6,15 +6,15 @@ using Ecommerce.Shared.TokenDTO;
 using Microsoft.AspNetCore.Mvc;
 using IAuthenticationService = Ecommerce.Core.Application.Common.Interfaces.Login.IAuthenticationService;
 
-namespace Ecommerce.Api.Controllers.DashboardControllers;
+namespace Ecommerce.Api.Controllers;
 
 [ApiController]
 [Route("api/dashboard")]
-public class DashboardController(
+public class AuthController(
     IAuthenticationService authenticationService,
     IUserRegistrationService registrationService,
     ITokenRefreshService refreshToken,
-    ILogger<DashboardController> logger): ControllerBase
+    ILogger<AuthController> logger): ControllerBase
 {
     #region Authentication
     /// <summary>
@@ -23,7 +23,7 @@ public class DashboardController(
     /// <param name="request">The login request containing the user's email and password.</param>
     /// <returns>A 200 OK response with the authentication data on success, or an appropriate error response on failure.</returns>
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
+    public async Task<IActionResult> LoginAsync([FromBody] LoginRequestDto request)
     {
         var response = await authenticationService.LoginAsync(request);
         logger.LogInformation("User {Email} logged in successfully", request.Email);
@@ -31,12 +31,12 @@ public class DashboardController(
     }
 
     /// <summary>
-    /// Authenticates a user and generates an access token upon successful login.
+    /// Log out your Account by providing the valid refresh Token
     /// </summary>
-    /// <param name="token">The login request containing the user's credentials, such as email and password.</param>
-    /// <returns>A response indicating the result of the login operation, including authentication data on success or an error message on failure.</returns>
+    /// <param name="token"></param>
+    /// <returns></returns>
     [HttpPost("logout")]
-    public async Task<IActionResult> Login([FromQuery] string token)
+    public async Task<IActionResult> LogOutAsync([FromQuery] string token)
     {
         var response = await authenticationService.LogoutAsync(token);
         logger.LogInformation("User logged out successfully");
