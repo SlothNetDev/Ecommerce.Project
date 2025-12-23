@@ -19,18 +19,28 @@ public static class ApplicationBuilderExtensions
                 options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
             });
         }
-        // Configure the HTTP request pipeline.
         if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Testing"))
         {
             app.UseHangfireDashboard();
-            
-            //Seed Roles for request (skip in Testing environment - handled by test factory)
-            using(var scope = app.Services.CreateScope())
+        }
+
+        // Seed Roles for all environments except Testing (handled by test factory)
+        if (!app.Environment.IsEnvironment("Testing"))
+        {
+            using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-                var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
-
-                await IdentitySeeder.SeedRolesAsync(roleManager);
+                try
+                {
+                    var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
+                    await IdentitySeeder.SeedRolesAsync(roleManager);
+                }
+                catch (Exception ex)
+                {
+                    // Good practice to log seeding failures
+                    var logger = services.GetRequiredService<ILogger<WebApplication>>();
+                    logger.LogError(ex, "An error occurred while seeding roles.");
+                }
             }
         }
         
