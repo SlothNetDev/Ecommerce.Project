@@ -4,7 +4,7 @@ using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Shared.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace Ecommerce.Infrastructure.Identity.Services.Register;
+namespace Ecommerce.Infrastructure.Services.Notification;
 
 /// <summary>
 /// Service for generating, storing, and validating One-Time Passwords (OTP).
@@ -49,70 +49,62 @@ public class OtpService(ILogger<OtpService> logger) : IOtpService
     }
 
     /// <inheritdoc/>
-    public Task<OtpValidationResult> ValidateOtpAsync(string email, string otpCode)
+    public async Task<OtpValidationResult> ValidateOtpAsync(string email, string otpCode)
     {
-        try
+        var normalizedEmail = email.ToLowerInvariant();
+
+        // Check if OTP exists
+        if (!_otpStore.TryGetValue(normalizedEmail, out var otpData))
         {
-            var normalizedEmail = email.ToLowerInvariant();
+            logger.LogWarning("OTP validation failed: No OTP found for email: {Email}", normalizedEmail);
+            return await Task.FromResult(OtpValidationResult.NotFound);
+        }
 
-            // Check if OTP exists
-            if (!_otpStore.TryGetValue(normalizedEmail, out var otpData))
-            {
-                logger.LogWarning("OTP validation failed: No OTP found for email: {Email}", normalizedEmail);
-                return Task.FromResult(OtpValidationResult.NotFound);
-            }
+        // Check if already used
+        if (otpData.IsUsed)
+        {
+            logger.LogWarning("OTP validation failed: OTP already used for email: {Email}", normalizedEmail);
+            return await Task.FromResult(OtpValidationResult.Invalid);
+        }
 
-            // Check if already used
-            if (otpData.IsUsed)
-            {
-                logger.LogWarning("OTP validation failed: OTP already used for email: {Email}", normalizedEmail);
-                return Task.FromResult(OtpValidationResult.Invalid);
-            }
+        // Check if expired
+        if (DateTime.UtcNow > otpData.ExpiresAt)
+        {
+            logger.LogWarning("OTP validation failed: OTP expired for email: {Email}", normalizedEmail);
+            return await Task.FromResult(OtpValidationResult.Expired);
+        }
 
-            // Check if expired
-            if (DateTime.UtcNow > otpData.ExpiresAt)
-            {
-                logger.LogWarning("OTP validation failed: OTP expired for email: {Email}", normalizedEmail);
-                return Task.FromResult(OtpValidationResult.Expired);
-            }
+        // Check attempt limit
+        if (otpData.Attempts >= _maxAttempts)
+        {
+            logger.LogWarning("OTP validation failed: Too many attempts for email: {Email}", normalizedEmail);
+            return await Task.FromResult(OtpValidationResult.TooManyAttempts);
+        }
 
-            // Check attempt limit
+        // Increment attempts
+        otpData.Attempts++;
+
+        // Validate code
+        if (otpData.Code != otpCode)
+        {
+            logger.LogWarning("OTP validation failed: Invalid code for email: {Email}, attempt: {Attempt}",
+                normalizedEmail, otpData.Attempts);
+
+            // Remove OTP after max attempts
             if (otpData.Attempts >= _maxAttempts)
             {
-                logger.LogWarning("OTP validation failed: Too many attempts for email: {Email}", normalizedEmail);
-                return Task.FromResult(OtpValidationResult.TooManyAttempts);
+                _otpStore.Remove(normalizedEmail);
             }
 
-            // Increment attempts
-            otpData.Attempts++;
-
-            // Validate code
-            if (otpData.Code != otpCode)
-            {
-                logger.LogWarning("OTP validation failed: Invalid code for email: {Email}, attempt: {Attempt}",
-                    normalizedEmail, otpData.Attempts);
-
-                // Remove OTP after max attempts
-                if (otpData.Attempts >= _maxAttempts)
-                {
-                    _otpStore.Remove(normalizedEmail);
-                }
-
-                return Task.FromResult(OtpValidationResult.Invalid);
-            }
-
-            // Mark as used and remove from store
-            otpData.IsUsed = true;
-            _otpStore.Remove(normalizedEmail);
-
-            logger.LogInformation("OTP validation successful for email: {Email}", normalizedEmail);
-            return Task.FromResult(OtpValidationResult.Valid);
+            return await Task.FromResult(OtpValidationResult.Invalid);
         }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "OTP validation error for email: {Email}", email);
-            return Task.FromResult(OtpValidationResult.Invalid);
-        }
+
+        // Mark as used and remove from store
+        otpData.IsUsed = true;
+        _otpStore.Remove(normalizedEmail);
+
+        logger.LogInformation("OTP validation successful for email: {Email}", normalizedEmail);
+        return await Task.FromResult(OtpValidationResult.Valid);
     }
 
     /// <inheritdoc/>
