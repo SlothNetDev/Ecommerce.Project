@@ -3,6 +3,7 @@ using Ecommerce.Core.Domain.Entities.Orders;
 using Ecommerce.Core.Domain.Entities.Reviews;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace Ecommerce.Core.Domain.Entities.UserManagement
 {
     public class User
     {
+         [Key]
          public Guid UserId { get; set; } = Guid.NewGuid();
         
          public bool IsActive { get; set; } = true;
