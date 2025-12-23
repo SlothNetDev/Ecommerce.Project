@@ -9,26 +9,25 @@ public class RegisterController(
     IUserRegistrationService registrationService,
     ILogger<RegisterController> logger) : ControllerBase
 {
-
     [HttpPost("register")]
-   public async Task<IActionResult> SignInAsync([FromBody] RegisterRequestDto request)
+   public async Task<IActionResult> RegisterAsync([FromBody] RegisterRequestDto request)
    {
        var response = await registrationService.RegisterAsync(request);
-       if (!response.Success)
-       {
-           logger.LogInformation("Processing registration request for {Email}", request?.Email);
-           
-           if (!response.Success)
-           {
-               return BadRequest(new ProblemDetails
-               {
-                   Title = "Registration Failed",
-                   Detail = response.Message,
-                   Status = StatusCodes.Status400BadRequest
-               });
-           }
-       }
        logger.LogInformation("User {Email} registered successfully", request.Email);
-       return StatusCode(StatusCodes.Status201Created, response);
+       return Ok(response);
+   }
+
+    [HttpPost("verify-email")]
+    public async Task<IActionResult> VerifyEmailAsync(EmailVerificationRequestDto email)
+    {
+        var response = await registrationService.VerifyEmailAsync(email);
+        return Ok(response);
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgetPasswordAsync([FromRoute] string email)
+    {
+        var response = await registrationService.ForgotPasswordAsync(email);
+        return Ok(response);
     }
 }
