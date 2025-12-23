@@ -15,7 +15,6 @@ namespace Ecommerce.Infrastructure.Identity.Services.Login;
 
 public class AuthenticationService(
     UserManager<ApplicationUser> userManager,
-    IOptions<IdentitySettings> identity,
     ITokenService tokenService,
     ILogger<AuthenticationService>  logger,
     ApplicationDbContext dbContext,
@@ -98,8 +97,29 @@ public class AuthenticationService(
 
     }
 
-    public async Task<ResponseType<string>> LogoutAsync(string userId)
+    public async Task<ResponseType<string>> LogoutAsync(string refreshTokenId)
     {
-        throw new NotImplementedException();
+        if (string.IsNullOrWhiteSpace(refreshTokenId))
+        {
+            logger.LogInformation("refresh Token cannot be empty");
+            return ResponseType<string>.Fail("Refresh Token cannot be Empty",
+                FailureType.Validation);
+        }
+        //check if refresh token exist
+        var isValid =  await refreshToken.IsRefreshTokenValidAsync(refreshTokenId);
+        if (!isValid)
+        {
+            return ResponseType<string>.Fail("Refresh Token is Invalid",
+                FailureType.Validation);
+        }
+        //get ip adress
+        var ipAdress = ipAdressService.GetClientIpAddress();
+        
+        //get the 
+        //break the refresh token
+        await refreshToken.RevokeRefreshTokenAsync(refreshTokenId, ipAdress, null);
+        
+        await dbContext.SaveChangesAsync();
+        return ResponseType<string>.SuccessResult("Logout Successfully");
     }
 }
