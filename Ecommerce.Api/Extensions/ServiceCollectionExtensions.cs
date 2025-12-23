@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Reflection;
+using System.Text;
 using Ecommerce.Core;
 using Ecommerce.Core.Application.Common.Interfaces;
 using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
@@ -42,8 +43,22 @@ public static class ServiceCollectionExtensions
             {
                 Title = "Ecommerce API",
                 Version = "v1",
-                Description = "API For Ecommerce"
+                Description = "API For Ecommerce Application",
+                License = new OpenApiLicense()
+                {
+                    Name ="Ecommerce Federation"
+                },
+                Contact = new  OpenApiContact()
+                {
+                    Email = "ecommerce.sample.com",
+                    Name = "bubena"
+                }
+                
             });
+            
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            options.IncludeXmlComments(xmlPath);
         });
 
         
