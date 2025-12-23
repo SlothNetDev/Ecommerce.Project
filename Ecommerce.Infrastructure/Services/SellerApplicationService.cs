@@ -8,7 +8,7 @@ using Ecommerce.Shared.Wrapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Ecommerce.Infrastructure.Identity.Services;
+namespace Ecommerce.Infrastructure.Services;
 
 public class SellerApplicationService(
     ApplicationDbContext dbContext,
