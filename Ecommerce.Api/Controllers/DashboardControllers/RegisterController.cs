@@ -21,6 +21,7 @@ public class RegisterController(
     public async Task<IActionResult> VerifyEmailAsync(EmailVerificationRequestDto email)
     {
         var response = await registrationService.VerifyEmailAsync(email);
+        logger.LogInformation("User {Email} verified successfully", email.Email);
         return Ok(response);
     }
 
@@ -28,6 +29,7 @@ public class RegisterController(
     public async Task<IActionResult> ForgetPasswordAsync([FromRoute] string email)
     {
         var response = await registrationService.ForgotPasswordAsync(email);
+        logger.LogInformation("Password reset link sent to {Email}", email);
         return Ok(response);
     }
 }
