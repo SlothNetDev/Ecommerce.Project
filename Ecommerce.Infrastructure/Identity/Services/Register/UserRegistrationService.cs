@@ -1,5 +1,6 @@
 using Ecommerce.Core.Application.Common.Interfaces.Notification;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
+using Ecommerce.Core.Domain.Entities.UserManagement;
 using Ecommerce.Infrastructure.Data.Seeders;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Shared.AuthenticationDTO;
@@ -57,6 +58,9 @@ public class UserRegistrationService(
                         "An account with this email already exists.");
                 }
             }
+            
+            // 1. Create domain user
+            var domainUser = new User();
 
             // 3. Create user
             var user = new ApplicationUser
@@ -65,8 +69,12 @@ public class UserRegistrationService(
                 Email = request.Email,
                 FirstName = request.FirstName,
                 LastName = request.LastName,
-                EmailConfirmed = false,
-                AccountCreatedAt = DateTime.UtcNow
+                EmailConfirmed = true,
+                AccountCreatedAt = DateTime.UtcNow,
+                DomainUser = domainUser,
+                SecurityStamp = Guid.NewGuid().ToString(),
+                LockoutEnabled = true,
+                AccessFailedCount = 0
             };
 
             var createResult = await userManager.CreateAsync(user, request.Password);
@@ -87,7 +95,7 @@ public class UserRegistrationService(
                 var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
                 logger.LogError("REG_004: Role assignment failed for {UserId}: {Errors}", user.Id, errors);
                 await userManager.DeleteAsync(user);
-                return ResponseType<RegisterResponseDto>.Fail("RoleAssignmentFailed",
+                return ResponseType<RegisterResponseDto>.Fail("Role Assignment Failed",
                     FailureType.Authorization,
                      errors);
             }
