@@ -1,12 +1,11 @@
 using Ecommerce.Core.Application.Common.Interfaces;
-using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Shared.Enums;
 using Ecommerce.Shared.Wrapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
-namespace Ecommerce.Infrastructure.Identity.Services;
+namespace Ecommerce.Infrastructure.Services;
 
 public class RoleManagerService(
     UserManager<ApplicationUser> userManager,
