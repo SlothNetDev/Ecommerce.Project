@@ -31,13 +31,15 @@ public class SellerApplicationService(
             if (existingApplication.Status == nameof(ApplicationStatus.Pending))
             {
                 logger.LogWarning("User {UserId} already has pending application. Skipping application submission.", request.SellerId);
-                return ResponseType<SellerApplicationResponse>.Fail("User already has pending application");
+                return ResponseType<SellerApplicationResponse>.Fail("User already has pending application",
+                    FailureType.Conflict);
             }
 
             if (existingApplication.Status == nameof(ApplicationStatus.Approved))
             {
                 logger.LogWarning("User {UserId} already has approved application. Skipping application submission.", request.SellerId);
-                return ResponseType<SellerApplicationResponse>.Fail("User already has approved application");
+                return ResponseType<SellerApplicationResponse>.Fail("User already has approved application",
+                    FailureType.Conflict);
             }
         }
         
@@ -101,14 +103,16 @@ public class SellerApplicationService(
         if(application is null)
         {
             logger.LogError("Application not found for sellerId: {SellerId}", request.ApplicationId);
-            return ResponseType<bool>.Fail("Application not found");
+            return ResponseType<bool>.Fail("Application not found",
+                FailureType.NotFound);
         }
         
         //3. ensure the application was pending before approval
         if(application.Status != nameof(ApplicationStatus.Pending))
         {
             logger.LogError("Application status is not pending: {Status}", application.Status);
-            return ResponseType<bool>.Fail("Application status is not pending");
+            return ResponseType<bool>.Fail("Application status is not pending",
+                FailureType.Conflict);
         }
         
         //4. approve the application of admin
@@ -153,7 +157,8 @@ public class SellerApplicationService(
         if (!roleResult.Success)
         {
             logger.LogError("Failed to assign role {Role} to user {UserId}", RoleSeeder.Seller, application.SellerId);
-            return ResponseType<bool>.Fail("Application approved, but failed to update user role");
+            return ResponseType<bool>.Fail("Application approved, but failed to update user role",
+                FailureType.Internal);
         }
         return ResponseType<bool>.SuccessResult(true, "Application approved successfully");
     }
@@ -167,14 +172,16 @@ public class SellerApplicationService(
         if(application is null)
         {
             logger.LogError("Application not found for sellerId: {SellerId}", request.ApplicationId);
-            return ResponseType<bool>.Fail("Application not found");
+            return ResponseType<bool>.Fail("Application not found",
+                FailureType.NotFound);
         }
         
         //3. ensure the application was pending before approval
         if(application.Status != nameof(ApplicationStatus.Pending))
         {
             logger.LogError("Application status is not pending: {Status}", application.Status);
-            return ResponseType<bool>.Fail("Application status is not pending");
+            return ResponseType<bool>.Fail("Application status is not pending",
+                FailureType.Conflict);
         }
         
         //4. rejected the application of admin
@@ -197,7 +204,8 @@ public class SellerApplicationService(
         if (!roleResult.Success)
         {
             logger.LogError("Failed to assign role {Role} to user {UserId}", RoleSeeder.Seller, application.SellerId);
-            return ResponseType<bool>.Fail("Application Rejected, but failed to update user role");
+            return ResponseType<bool>.Fail("Application Rejected, but failed to update user role",
+                FailureType.Internal);
         }
         return ResponseType<bool>.SuccessResult(true, "Application Rejected successfully");
     }
