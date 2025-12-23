@@ -1,13 +1,10 @@
 using Ecommerce.Core.Application.Common.Interfaces.Notification;
-using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Core.Application.Settings;
-using FluentEmail.Core;
-using FluentEmail.SendGrid;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Resend;
 
-namespace Ecommerce.Infrastructure.Notification;
+namespace Ecommerce.Infrastructure.Services.Notification;
 
 /// <summary>
 /// Service for sending emails via SendGrid.
