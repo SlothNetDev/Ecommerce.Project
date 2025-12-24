@@ -1,8 +1,10 @@
+using Ecommerce.Core.Application.Common.Interfaces.BackGroundJob;
 using Ecommerce.Core.Application.Common.Interfaces.Notification;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Core.Domain.Entities.UserManagement;
 using Ecommerce.Infrastructure.Data.Seeders;
 using Ecommerce.Infrastructure.Identity.Entities;
+using Ecommerce.Infrastructure.Services.BackgroundJobs;
 using Ecommerce.Shared.AuthenticationDTO;
 using Ecommerce.Shared.Enums;
 using Ecommerce.Shared.RegisterDto;
@@ -59,24 +61,27 @@ public class UserRegistrationService(
                 }
             }
             
-            // 1. Create domain user
+            // 3. Create domain user
             var domainUser = new User();
 
-            // 3. Create user
+            // 4. Create user
             var user = new ApplicationUser
             {
                 UserName = request.Email,
                 Email = request.Email,
                 FirstName = request.FirstName,
                 LastName = request.LastName,
-                EmailConfirmed = true,
+                EmailConfirmed = false,
                 AccountCreatedAt = DateTime.UtcNow,
                 DomainUser = domainUser,
                 SecurityStamp = Guid.NewGuid().ToString(),
                 LockoutEnabled = true,
                 AccessFailedCount = 0
             };
-
+            
+            var key = Environment.GetEnvironmentVariable("RESEND_API_KEY");
+            logger.LogInformation("Resend API Key Loaded: {Loaded}", !string.IsNullOrEmpty(key));
+            //5. create the user in the database 
             var createResult = await userManager.CreateAsync(user, request.Password);
             if (!createResult.Succeeded)
             {
@@ -85,10 +90,9 @@ public class UserRegistrationService(
                 return ResponseType<RegisterResponseDto>.Fail("Registration Failed",
                     FailureType.Authentication,
                     errors
-                    );
+                );
             }
-
-            // 4. Assign default role
+            // 6. Assign default role and in database
             var roleResult = await userManager.AddToRoleAsync(user, RoleSeeder.Customer);
             if (!roleResult.Succeeded)
             {
@@ -97,10 +101,12 @@ public class UserRegistrationService(
                 await userManager.DeleteAsync(user);
                 return ResponseType<RegisterResponseDto>.Fail("Role Assignment Failed",
                     FailureType.Authorization,
-                     errors);
+                    errors);
             }
-
-            // 5. Generate OTP internally
+            
+            
+           
+            // 7. Generate OTP internally
             var otpCode = await otpService.GenerateOtpAsync(user.Email);
             if (string.IsNullOrWhiteSpace(otpCode) || otpCode.Length != 6)
             {
@@ -112,15 +118,12 @@ public class UserRegistrationService(
                     "Failed to generate verification code. Please try again.");
             }
 
-            // 6. Enqueue OTP email internally
+            // 8. Enqueue OTP email internally
             var userName = $"{user.FirstName} {user.LastName}".Trim();
-            BackgroundJob.Enqueue<IEmailService>(email =>
-                email.SendOtpEmailAsync(user.Email, otpCode, userName));
-
-            logger.LogInformation("REG_006: User registered successfully, OTP enqueued for {Email} (ID: {UserId})",
-                user.Email, user.Id);
-
-            // 7. Return response without exposing OTP
+            BackgroundJob.Enqueue<EmailJobService>(email =>
+                email.SendOtpAsync(user.Email, otpCode, userName));
+            
+            // 9. Return response without exposing OTP
             var response = new RegisterResponseDto
             {
                 UserId = user.Id,
@@ -167,8 +170,8 @@ public class UserRegistrationService(
 
         // Send welcome email asynchronously
         var userName = $"{user.FirstName} {user.LastName}".Trim();
-        BackgroundJob.Enqueue<IEmailService>(email =>
-            email.SendWelcomeEmailAsync(user.Email, user.UserName, user.FirstName));
+        BackgroundJob.Enqueue<IEmailJobService>(email =>
+            email.SendWelcomeAsync(user.Email!, user.UserName!, user.FirstName));
 
         return ResponseType<string>.SuccessResult("Email verified successfully! Your account is now active.");
     }
