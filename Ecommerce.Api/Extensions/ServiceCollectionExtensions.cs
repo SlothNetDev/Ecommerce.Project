@@ -8,6 +8,7 @@ using Ecommerce.Core.Application.Common.Interfaces.Notification;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Core.Application.Settings;
 using Ecommerce.Infrastructure.Data;
+using Ecommerce.Infrastructure.DevelopmentService.Notification;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Infrastructure.Identity.Services;
 using Ecommerce.Infrastructure.Identity.Services.JwtTokenService;
@@ -125,6 +126,9 @@ public static class ServiceCollectionExtensions
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.AllowedForNewUsers = true;
+                
+                //confirm login email
+                options.SignIn.RequireConfirmedAccount = true;
             })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
@@ -151,16 +155,25 @@ public static class ServiceCollectionExtensions
         //seller application
         service.AddScoped<ISellerApplicationService, SellerApplicationService>();
 
-        service.AddScoped<IEmailService, EmailService>();
+       
     }
     private static void ResendEmail(IConfiguration configuration, IServiceCollection services)
     {
-        services.AddOptions<EmailSettings>()
-            .Bind(configuration.GetSection("Resend"));
-
-        services.AddHttpClient<ResendClient>();
-        services.AddTransient<IResend, ResendClient>();
-
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+        {
+            // This ensures the same list instance is shared across the entire application lifetime
+            services.AddSingleton<DevEmailStore>();
+            services.AddScoped<IEmailService, DevEmailService>();
+        }
+        else
+        {
+            services.AddOptions<EmailSettings>()
+                .Bind(configuration.GetSection("Resend"));
+            services.AddHttpClient<ResendClient>();
+            services.AddTransient<IResend, ResendClient>();
+            
+            services.AddScoped<IEmailService, EmailService>();   // for production
+        }
     }
     
     
