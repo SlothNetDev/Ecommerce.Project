@@ -1,5 +1,6 @@
 ﻿using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
+using Ecommerce.Infrastructure.DevelopmentService.Notification;
 using Ecommerce.Shared.AuthenticationDTO;
 using Ecommerce.Shared.RegisterDto;
 using Ecommerce.Shared.TokenDTO;
@@ -9,12 +10,13 @@ using IAuthenticationService = Ecommerce.Core.Application.Common.Interfaces.Logi
 namespace Ecommerce.Api.Controllers;
 
 [ApiController]
-[Route("api/dashboard")]
+[Route("api/auth")]
 public class AuthController(
     IAuthenticationService authenticationService,
     IUserRegistrationService registrationService,
     ITokenRefreshService refreshToken,
-    ILogger<AuthController> logger): ControllerBase
+    ILogger<AuthController> logger,
+    DevEmailStore fakeEmailService): ControllerBase
 {
     #region Authentication
     /// <summary>
@@ -111,4 +113,10 @@ public class AuthController(
         return Ok(response);
     }
     #endregion
+    
+    #if DEBUG
+    [HttpGet("GetEmails")]
+    public IActionResult Get()
+        => Ok(fakeEmailService.GetAllEmails());
+    #endif
 }
