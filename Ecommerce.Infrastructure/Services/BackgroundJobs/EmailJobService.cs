@@ -13,7 +13,7 @@ public class EmailJobService(IEmailService emailService) : IEmailJobService
         => emailService.SendOtpEmailAsync(email, otp, name);
 
     public Task SendWelcomeAsync(string email, string userName, string firstName)
-     => emailService.SendWelcomeEmailAsync(email, userName, firstName);
+     => emailService.SendWelcomeEmailAsync(email, userName, firstName); 
 
     public Task SendPasswordResetAsync(string email, string resetToken, string userName)
     => emailService.SendPasswordResetEmailAsync(email, resetToken, userName);
