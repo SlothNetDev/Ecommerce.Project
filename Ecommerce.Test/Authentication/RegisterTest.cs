@@ -1,4 +1,5 @@
-﻿using Ecommerce.Core.Application.Common.Interfaces.Notification;
+﻿using System.Net.Http.Json;
+using Ecommerce.Core.Application.Common.Interfaces.Notification;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Infrastructure.Data.Seeders;
 using Ecommerce.Infrastructure.Identity.Entities;
@@ -7,7 +8,7 @@ using Ecommerce.Shared.Enums;
 using Ecommerce.Shared.RegisterDto;
 using Ecommerce.Test.Authentication.Helpers;
 using Ecommerce.Test.TestUtilities;
-using Ecommerce.UI;
+using Ecommerce.Api;
 using Hangfire;
 using Hangfire.Common;
 using Hangfire.States;
@@ -34,7 +35,7 @@ public class UserRegistrationServiceTest : TestBase
     private readonly Mock<ILogger<UserRegistrationService>> _mockLogger;
     private readonly Mock<IBackgroundJobClient> _mockBackgroundJobClient;
     private readonly UserRegistrationService _registrationService;
-
+    private const string LoginEndpoint = "api/dashboard/register";
     public UserRegistrationServiceTest(CustomWebApplicationFactory<Program> factory, ITestOutputHelper output) 
         : base(factory)
     {
@@ -69,15 +70,6 @@ public class UserRegistrationServiceTest : TestBase
     public async Task Register_Creates_New_Account_With_OTP_Workflow()
     {
         // ============================================================
-        // STEP 0: Seed database with required roles and test users
-        // ============================================================
-        var userManager = _factory.Services.GetRequiredService<UserManager<ApplicationUser>>();
-        var roleManager = _factory.Services.GetRequiredService<RoleManager<ApplicationRole>>();
-        
-        await DatabaseSeeder.SeedAsync(userManager, roleManager);
-        _output.WriteLine("✓ Database seeded with roles and test users");
-        
-        // ============================================================
         // STEP 1: Setup test data
         // ============================================================
         var request = new RegisterRequestDto
@@ -92,7 +84,14 @@ public class UserRegistrationServiceTest : TestBase
         _output.WriteLine($"✓ Test registration request:");
         _output.WriteLine($"  - Email: {request.Email}");
         _output.WriteLine($"  - Name: {request.FirstName} {request.LastName}");
-
+        
+        // ============================================================
+        // STEP 2: Attempt login via API endpoint
+        // ============================================================
+        _output.WriteLine("\n--- ATTEMPTING LOGIN WITH NON-EXISTENT USER ---");
+        var response = await _client.PostAsJsonAsync(LoginEndpoint, request);
+        _output.WriteLine($"✓ API Response Status: {response.StatusCode}");
+        
         // ============================================================
         // STEP 2: Setup mocks for successful flow
         // ============================================================

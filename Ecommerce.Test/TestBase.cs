@@ -1,6 +1,6 @@
 using System.Net.Http.Headers;
 using Ecommerce.Test.TestUtilities;
-using Ecommerce.UI;
+using Ecommerce.Api;
 using Xunit;
 
 namespace Ecommerce.Test;

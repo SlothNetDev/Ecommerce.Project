@@ -2,6 +2,7 @@
 using Ecommerce.Shared.Enums;
 using Ecommerce.Test.TestUtilities;
 using Ecommerce.Api;
+using Ecommerce.Infrastructure.Services.Notification;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit.Abstractions;

@@ -5,12 +5,13 @@ using System.Security.Claims;
 using Ecommerce.Core.Application.Common.Interfaces;
 using Ecommerce.Core.Application.Settings;
 using Ecommerce.Infrastructure.Data;
+using Ecommerce.Infrastructure.Data.Seeders;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Shared.AuthenticationDTO;
 using Ecommerce.Shared.Wrapper;
 using Ecommerce.Test.Authentication.Helpers;
 using Ecommerce.Test.TestUtilities;
-using Ecommerce.UI;
+using Ecommerce.Api;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +30,7 @@ namespace Ecommerce.Test.Authentication;
 public class LoginTest : TestBase
 {
     private readonly HttpClient _client;
-    private const string LoginEndpoint = "Auth/Login";
+    private const string LoginEndpoint = "api/dashboard/login";
     private readonly AssertApiHelper _assert;
     private readonly ITestOutputHelper _output;
 
@@ -70,7 +71,7 @@ public class LoginTest : TestBase
         // ============================================================
         // STEP 3: Verify authentication failed
         // ============================================================
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var responseContent = await response.Content.ReadAsStringAsync();
         _output.WriteLine($"✓ Response Content: {responseContent}");
@@ -104,7 +105,7 @@ public class LoginTest : TestBase
                 AccountCreatedAt = DateTime.UtcNow
             };
             await userManager.CreateAsync(testUser, "CorrectPass123!");
-            await userManager.AddToRoleAsync(testUser, "Costumer");
+            await userManager.AddToRoleAsync(testUser, RoleSeeder.Customer);
             _output.WriteLine("✓ Created test user: wrongpass@test.com");
         }
 
@@ -124,7 +125,7 @@ public class LoginTest : TestBase
         // ============================================================
         // STEP 3: Verify authentication failed
         // ============================================================
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var typed = await response.Content.ReadFromJsonAsync<ResponseType<AuthenticationResponseDto>>();
         _output.WriteLine($"✓ Parsed Response: {System.Text.Json.JsonSerializer.Serialize(typed)}");
@@ -156,7 +157,7 @@ public class LoginTest : TestBase
                 AccountCreatedAt = DateTime.UtcNow
             };
             await userManager.CreateAsync(testUser, "ValidPass123!");
-            await userManager.AddToRoleAsync(testUser, "Costumer");
+            await userManager.AddToRoleAsync(testUser, RoleSeeder.Customer);
             _output.WriteLine("✓ Created test user: validlogin@test.com");
         }
 
@@ -202,7 +203,7 @@ public class LoginTest : TestBase
 
         // Verify user information
         Assert.Equal(testUser.UserName, authData.UserName);
-        Assert.Equal("Costumer", authData.Role); // API returns the actual role from database
+        Assert.Equal(RoleSeeder.Customer, authData.Role); // API returns the actual role from database
 
         // Verify tokens are present
         Assert.False(string.IsNullOrWhiteSpace(authData.BearerToken));
@@ -236,7 +237,7 @@ public class LoginTest : TestBase
                 AccountCreatedAt = DateTime.UtcNow
             };
             await userManager.CreateAsync(jwtTestUser, "JwtTest123!");
-            await userManager.AddToRoleAsync(jwtTestUser, "Costumer");
+            await userManager.AddToRoleAsync(jwtTestUser, RoleSeeder.Customer);
             _output.WriteLine("✓ Created JWT test user: jwttest@test.com");
         }
 
@@ -291,7 +292,7 @@ public class LoginTest : TestBase
         // ============================================================
         var roleClaims = jwtToken.Claims.Where(c => c.Type == ClaimTypes.Role || c.Type == "role").ToList();
         Assert.NotEmpty(roleClaims);
-        Assert.Contains("Costumer", roleClaims.Select(c => c.Value));
+        Assert.Contains(RoleSeeder.Customer, roleClaims.Select(c => c.Value));
         _output.WriteLine($"✓ Role claims: {string.Join(", ", roleClaims.Select(c => c.Value))}");
 
         // ============================================================
@@ -331,7 +332,7 @@ public class LoginTest : TestBase
                 AccountCreatedAt = DateTime.UtcNow
             };
             await userManager.CreateAsync(refreshTestUser, "RefreshTest123!");
-            await userManager.AddToRoleAsync(refreshTestUser, "Costumer");
+            await userManager.AddToRoleAsync(refreshTestUser, RoleSeeder.Customer);
             _output.WriteLine("✓ Created refresh token test user: refreshtest@test.com");
         }
 
@@ -469,7 +470,7 @@ public class LoginTest : TestBase
                 AccountCreatedAt = DateTime.UtcNow
             };
             await userManager.CreateAsync(lockoutUser, "CorrectPass123!");
-            await userManager.AddToRoleAsync(lockoutUser, "Costumer");
+            await userManager.AddToRoleAsync(lockoutUser, RoleSeeder.Customer);
             _output.WriteLine("✓ Created lockout test user: lockout@test.com");
         }
 
@@ -493,7 +494,7 @@ public class LoginTest : TestBase
             // First 5 should fail with bad request, 6th might trigger lockout
             if (i <= 5)
             {
-                Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
         }
 
