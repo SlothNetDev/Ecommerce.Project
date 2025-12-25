@@ -23,5 +23,11 @@ public class EmailOtp
     public int Attempts { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
+    //Anti abuse
+    public DateTime LastSentAt { get; set; }
+    public int ResentCount { get; set; }
+    
+    public bool IsLocked => Attempts >= 5;
+    public bool IsActive => !IsExpired && !IsLocked;
     public bool IsExpired => DateTime.UtcNow >= ExpiresAt; //expression embodied property
 }
