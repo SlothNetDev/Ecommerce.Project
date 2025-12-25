@@ -63,6 +63,17 @@ public static class ServiceCollectionExtensions
         //add jwt bearer service
         JwtBearerService(configuration, services);
         
+        
+        //Validate security key for OTP
+        services.AddOptions<JwtSettings>()
+            .Bind(configuration.GetSection(nameof(SecurityKeySettings)))
+            .ValidateDataAnnotations()
+            .Validate(
+                s => !string.IsNullOrWhiteSpace(s.Key),
+                "Otp Key must be provided"
+            )
+            .ValidateOnStart();
+        
         return services;
     }
     
