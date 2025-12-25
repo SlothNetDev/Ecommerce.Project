@@ -1,7 +1,12 @@
 using Ecommerce.Core.Application.Common.Interfaces.Register;
+using Ecommerce.Core.Application.Common.Interfaces.Security;
 using Ecommerce.Core.Domain.Utilities;
+using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
+using Ecommerce.Infrastructure.Security;
 using Ecommerce.Shared.Enums;
+using Ecommerce.Shared.Wrapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Ecommerce.Infrastructure.Services.Notification;
@@ -10,147 +15,138 @@ namespace Ecommerce.Infrastructure.Services.Notification;
 /// Service for generating, storing, and validating One-Time Passwords (OTP).
 /// Uses in-memory storage for development; can be easily extended to use Redis or database.
 /// </summary>
-public class OtpService(ILogger<OtpService> logger) : IOtpService
+public class OtpService(ILogger<OtpService> logger,
+    ApplicationDbContext dbContext,
+    IHashService hashService) : IOtpService
 {
-    private readonly Dictionary<string, OtpData> _otpStore = new();
-    private readonly TimeSpan _otpExpiration = TimeSpan.FromMinutes(10); // 10 minutes
-    private readonly int _maxAttempts = 5; // Maximum verification attempts
-
-    /// <inheritdoc/>
-    public async Task<string> GenerateOtpAsync(string email)
+    private const int MaxAttemp = 5;
+    private static readonly DateTime ResendCooldown = DateTime.UtcNow.AddSeconds(60);
+    private static readonly TimeSpan OtpExpiration = TimeSpan.FromMinutes(5); //expire after 5 minutes
+    public async Task<ResponseType<string>> CreateEmailOtpAsync(Guid userId)
     {
-        // Normalize email to lowercase for consistency
-        var normalizedEmail = email.ToLowerInvariant();
-
-        // Generate a 6-digit random OTP
-        var otpCode = OtpGenerator.GenerateOtp();
-
-        // Create OTP data
-        var otp = new OtpData
+        if (userId == Guid.Empty)
         {
-            Code = otpCode,
-            Email = normalizedEmail,
-            CreatedAt = DateTime.UtcNow,
-            ExpiresAt = DateTime.UtcNow.Add(_otpExpiration),
-            Attempts = 0,
-            IsUsed = false
+            logger.LogWarning("User Id Cannot be empty");
+            return ResponseType<string>.Fail("User Id is Empty",
+                FailureType.Validation);
+        }
+
+        var generateOtp = OtpGenerator.GenerateOtp();
+        var hashOtp = hashService.Hash(generateOtp); //hashing the generated Otp
+
+        var entity = new EmailOtp()
+        {
+            UserId = userId,
+            CodeHash = hashOtp,
+            ExpiresAt = DateTime.UtcNow.Add(OtpExpiration),
         };
-
-        // Store in memory (replace with Redis/database in production)
-        _otpStore[normalizedEmail] = otp;
-
-        // Clean up expired OTPs periodically
-        await CleanupExpiredOtpsAsync();
-
-        logger.LogInformation("OTP generated for email: {Email}, expires at: {ExpiresAt}",
-            normalizedEmail, otp.ExpiresAt);
-
-        return otp.Code;
-    }
-
-    /// <inheritdoc/>
-    public async Task<OtpValidationResult> ValidateOtpAsync(string email, string otpCode)
-    {
-        var normalizedEmail = email.ToLowerInvariant();
-
-        // Check if OTP exists
-        if (!_otpStore.TryGetValue(normalizedEmail, out var otpData))
-        {
-            logger.LogWarning("OTP validation failed: No OTP found for email: {Email}", normalizedEmail);
-            return await Task.FromResult(OtpValidationResult.NotFound);
-        }
-
-        // Check if already used
-        if (otpData.IsUsed)
-        {
-            logger.LogWarning("OTP validation failed: OTP already used for email: {Email}", normalizedEmail);
-            return await Task.FromResult(OtpValidationResult.Invalid);
-        }
-
-        // Check if expired
-        if (DateTime.UtcNow > otpData.ExpiresAt)
-        {
-            logger.LogWarning("OTP validation failed: OTP expired for email: {Email}", normalizedEmail);
-            return await Task.FromResult(OtpValidationResult.Expired);
-        }
-
-        // Check attempt limit
-        if (otpData.Attempts >= _maxAttempts)
-        {
-            logger.LogWarning("OTP validation failed: Too many attempts for email: {Email}", normalizedEmail);
-            return await Task.FromResult(OtpValidationResult.TooManyAttempts);
-        }
-
-        // Increment attempts
-        otpData.Attempts++;
-
-        // Validate code
-        if (otpData.Code != otpCode)
-        {
-            logger.LogWarning("OTP validation failed: Invalid code for email: {Email}, attempt: {Attempt}",
-                normalizedEmail, otpData.Attempts);
-
-            // Remove OTP after max attempts
-            if (otpData.Attempts >= _maxAttempts)
-            {
-                _otpStore.Remove(normalizedEmail);
-            }
-
-            return await Task.FromResult(OtpValidationResult.Invalid);
-        }
-
-        // Mark as used and remove from store
-        otpData.IsUsed = true;
-        _otpStore.Remove(normalizedEmail);
-
-        logger.LogInformation("OTP validation successful for email: {Email}", normalizedEmail);
-        return await Task.FromResult(OtpValidationResult.Valid);
-    }
-
-    /// <inheritdoc/>
-    public Task<bool> HasValidOtpAsync(string email)
-    {
-        var normalizedEmail = email.ToLowerInvariant();
-
-        if (!_otpStore.TryGetValue(normalizedEmail, out var otpData))
-        {
-            return Task.FromResult(false);
-        }
-
-        // Check if expired or used
-        return Task.FromResult(!otpData.IsUsed && DateTime.UtcNow <= otpData.ExpiresAt);
-    }
-
-    /// <inheritdoc/>
-    public Task RemoveOtpAsync(string email)
-    {
-        var normalizedEmail = email.ToLowerInvariant();
-        _otpStore.Remove(normalizedEmail);
-        logger.LogInformation("OTP removed for email: {Email}", normalizedEmail);
         
-        return Task.CompletedTask;
+        await dbContext.AddAsync(entity);
+        await dbContext.SaveChangesAsync();
+        
+        logger.LogInformation("Otp Generated Successfully for user: {UserId}", userId);
+        
+        return ResponseType<string>.SuccessResult(generateOtp, "Otp Generated Successfully");
     }
 
-    
-    /// <summary>
-    /// Cleans up expired OTPs from memory to prevent memory leaks.
-    /// In production, this would be handled differently (e.g., background job).
-    /// </summary>
-    private Task CleanupExpiredOtpsAsync()
+    public async Task<OtpValidationResult> VerifyEmailOtpAsync(Guid userId, string otpCode)
     {
-        var expiredEmails = _otpStore
-            .Where(kvp => DateTime.UtcNow > kvp.Value.ExpiresAt)
-            .Select(kvp => kvp.Key)
-            .ToList();
-        
-        foreach (var email in expiredEmails)
+        if (userId == Guid.Empty)
         {
-            _otpStore.Remove(email);
-            logger.LogDebug("Cleaned up expired OTP for email: {Email}", email);
+            logger.LogWarning("User Id Cannot be empty");
+            return OtpValidationResult.Invalid;
         }
 
-        return Task.CompletedTask;
+        if (string.IsNullOrWhiteSpace(otpCode))
+        {
+            logger.LogWarning("Otp Code Cannot be empty");
+            return OtpValidationResult.Invalid;
+        }
+
+        var otp = await dbContext.EmailOtpDb
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
+        
+        if(otp is null)
+            return OtpValidationResult.NotFound;
+
+        if (otp.IsExpired || !otp.IsActive)
+        {
+            dbContext.Remove(otp);
+            await dbContext.SaveChangesAsync();
+            return OtpValidationResult.Expired;
+        }
+            
+
+        if (otp.Attempts >= MaxAttemp)
+            return OtpValidationResult.TooManyAttempts;
+        
+        otp.Attempts++; // increment otp Attemps per verification
+
+        if (!hashService.Verify(otpCode, otp.CodeHash)) //check if otp is has
+        {
+            if(otp.IsLocked) //check if it's lock
+                dbContext.Remove(otp);
+            
+            await dbContext.SaveChangesAsync();
+            return OtpValidationResult.Invalid;
+        }
+        
+        return OtpValidationResult.Valid;
     }
 
-    
+    public async Task<ResponseType<bool>> HasValidOtpAsync(Guid userId)
+    {
+        var response =  await dbContext.EmailOtpDb
+            .AnyAsync(x => x.UserId == userId &&
+                           x.VerifiedAt == null &&
+                           x.IsExpired);
+        return ResponseType<bool>.SuccessResult(response, "Otp Valid");
+    }
+
+    public async Task<ResponseType<string>> ResendOtpAsync(Guid userId)
+    {
+        if (userId == Guid.Empty)
+        {
+            logger.LogWarning("User Id Cannot be empty");
+            return ResponseType<string>.Fail("User Id is Empty",
+                FailureType.Validation);
+        }
+        
+        var exisingOtp = await dbContext.EmailOtpDb
+            .Where(x => x.UserId == userId)
+            .OrderByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
+        
+        //cooldown
+        if (exisingOtp is null && exisingOtp?.LastSentAt < ResendCooldown)
+        {
+            dbContext.Remove(exisingOtp);
+            await dbContext.SaveChangesAsync();
+            
+            logger.LogWarning("Existing otp is null");
+            return ResponseType<string>.Fail("Please wait for 60 second for you to resend otp",
+                FailureType.Expired);
+        } 
+        
+        //reset limit
+        var generateOtp = OtpGenerator.GenerateOtp();
+        var hashOtp = hashService.Hash(generateOtp); //hashing the generated Otp
+        
+        var entity = new EmailOtp()
+        {
+            UserId = userId,
+            CodeHash = hashOtp,
+            ExpiresAt = DateTime.UtcNow.Add(OtpExpiration),
+        };
+        
+        await dbContext.AddAsync(entity);
+        await dbContext.SaveChangesAsync();
+        
+        logger.LogInformation("Otp Generated Successfully for user: {UserId}", userId);
+        
+        return ResponseType<string>.SuccessResult(generateOtp, "Otp generated again Successfully");
+        
+    }
 }
