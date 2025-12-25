@@ -10,7 +10,7 @@ public class Program
         
         builder.AddCleanSerilog()
             .Services
-            .AddPresentationService(builder.Configuration);
+            .AddPresentationService(builder.Configuration, builder.Environment);
 
         var app = builder.Build();
 
