@@ -1,6 +1,8 @@
+using System.Security.Cryptography;
+
 namespace Ecommerce.Core.Domain.Utilities;
 
-public class OtpGenerator
+public static class OtpGenerator
 {
     private static readonly Random Random = new();
     
@@ -9,15 +11,8 @@ public class OtpGenerator
     /// </summary>
     public static string GenerateOtp()
     {
-        // Use crypto-secure random for production
-        // var bytes = RandomNumberGenerator.GetBytes(4);
-        // var number = BitConverter.ToUInt32(bytes) % 900000 + 100000;
-        // return number.ToString();
-        
-        // For now (development):
-        lock (Random)
-        {
-            return Random.Next(100000, 999999).ToString();
-        }
+        var bytes = RandomNumberGenerator.GetBytes(4);
+        var number = BitConverter.ToUInt32(bytes) % 900000 + 100000;
+        return number.ToString();
     }
 }
