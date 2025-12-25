@@ -2,20 +2,17 @@
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Ecommerce.Core.Application.Common.Interfaces.Security;
+using Microsoft.Extensions.Logging;
 
 namespace Ecommerce.Infrastructure.Security;
 
 public class HmacHashService : IHashService
 {
     private readonly byte[] _key;
-
-    public HmacHashService(IConfiguration configuration)
+    public HmacHashService(IConfiguration configuration, ILogger<HmacHashService> logger)
     {
-        var secret = configuration["Security:OtpHashKey"];
-
-        if (string.IsNullOrWhiteSpace(secret))
-            throw new InvalidOperationException("OTP hash key is not configured.");
-
+        var secret = configuration["Security:Key"];
+        
         _key = Encoding.UTF8.GetBytes(secret);
     }
     public string Hash(string input)
