@@ -18,7 +18,7 @@ namespace Ecommerce.Core
     /// </summary>
     public static class DependencyInjection
     {
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services)
+        public static IServiceCollection AddCore(this IServiceCollection services)
         {
             #region Category Validation
             services.AddValidatorsFromAssemblyContaining<CategoryRequestValidation>();
