@@ -19,6 +19,18 @@ public class EmailOtpConfiguration : IEntityTypeConfiguration<EmailOtp>
         builder.Property(x => x.Attempts)
             .IsRequired()
             .HasDefaultValue(0);
+
+        builder.Property(x => x.ResentCount)
+            .IsRequired();
+            
+        builder.Property(x => x.VerifiedAt)
+            .IsRequired();
+        
+        builder.Property(x => x.LastSentAt)
+            .IsRequired();
+
+        builder.HasIndex(x => x.UserId)
+            .IsUnique(); // one active UserId otp per user
         
         //relationship
         builder.HasOne(x => x.ApplicationUser)
