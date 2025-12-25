@@ -390,6 +390,52 @@ namespace Ecommerce.Infrastructure.Migrations
                     b.ToTable("ApplicationUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Ecommerce.Infrastructure.Identity.Entities.EmailOtp", b =>
+                {
+                    b.Property<Guid>("EmailOtpId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Attempts")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastSentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ResentCount")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .IsRequired()
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("EmailOtpId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("UserId", "VerifiedAt");
+
+                    b.ToTable("Email_Otp", (string)null);
+                });
+
             modelBuilder.Entity("Ecommerce.Infrastructure.Identity.Entities.RoleChangeHistory", b =>
                 {
                     b.Property<Guid>("ChangeHistoryId")
@@ -687,6 +733,17 @@ namespace Ecommerce.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("DomainUser");
+                });
+
+            modelBuilder.Entity("Ecommerce.Infrastructure.Identity.Entities.EmailOtp", b =>
+                {
+                    b.HasOne("Ecommerce.Infrastructure.Identity.Entities.ApplicationUser", "ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
                 });
 
             modelBuilder.Entity("Ecommerce.Infrastructure.Identity.Entities.RoleChangeHistory", b =>
