@@ -6,6 +6,7 @@ using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Core.Application.Common.Interfaces.Login;
 using Ecommerce.Core.Application.Common.Interfaces.Notification;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
+using Ecommerce.Core.Application.Common.Interfaces.Security;
 using Ecommerce.Core.Application.Settings;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.DevelopmentService.Notification;
@@ -14,6 +15,7 @@ using Ecommerce.Infrastructure.Identity.Services;
 using Ecommerce.Infrastructure.Identity.Services.JwtTokenService;
 using Ecommerce.Infrastructure.Identity.Services.Login;
 using Ecommerce.Infrastructure.Identity.Services.Register;
+using Ecommerce.Infrastructure.Security;
 using Ecommerce.Infrastructure.Services;
 using Ecommerce.Infrastructure.Services.Notification;
 using FluentValidation.AspNetCore;
@@ -148,7 +150,10 @@ public static class ServiceCollectionExtensions
 
         //OTP and Email services
         service.AddScoped<IOtpService, OtpService>();
-
+        
+        //Security
+        service.AddScoped<IHashService, HmacHashService>();
+        
         //roles
         service.AddScoped<IRoleManagementService, RoleManagerService>();
 
