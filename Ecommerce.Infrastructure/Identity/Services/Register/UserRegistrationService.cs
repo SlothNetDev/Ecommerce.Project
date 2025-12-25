@@ -47,18 +47,10 @@ public class UserRegistrationService(
             var existingUser = await userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
             {
-                if (!existingUser.EmailConfirmed)
-                {
-                    logger.LogInformation("REG_002: Re-registering unconfirmed user: {Email}", request.Email);
-                    await otpService.RemoveOtpAsync(request.Email);
-                }
-                else
-                {
-                    return ResponseType<RegisterResponseDto>.Fail(
-                        "Email Already Exists",
-                        FailureType.Conflict,
+                logger.LogWarning("REG_002: Email already exists for {Email}", request.Email);
+                return ResponseType<RegisterResponseDto>
+                    .Fail( "Email Already Exists", FailureType.Conflict, 
                         "An account with this email already exists.");
-                }
             }
             
             // 3. Create domain user
@@ -79,8 +71,9 @@ public class UserRegistrationService(
                 AccessFailedCount = 0
             };
             
-            var key = Environment.GetEnvironmentVariable("RESEND_API_KEY");
-            logger.LogInformation("Resend API Key Loaded: {Loaded}", !string.IsNullOrEmpty(key));
+            /*var key = Environment.GetEnvironmentVariable("RESEND_API_KEY");
+            logger.LogInformation("Resend API Key Loaded: {Loaded}", !string.IsNullOrEmpty(key));*/
+            
             //5. create the user in the database 
             var createResult = await userManager.CreateAsync(user, request.Password);
             if (!createResult.Succeeded)
@@ -105,10 +98,9 @@ public class UserRegistrationService(
             }
             
             
-           
             // 7. Generate OTP internally
-            var otpCode = await otpService.GenerateOtpAsync(user.Email);
-            if (string.IsNullOrWhiteSpace(otpCode) || otpCode.Length != 6)
+            var otpCode = await otpService.CreateEmailOtpAsync(user.Id);
+            if (string.IsNullOrWhiteSpace(otpCode.Data))
             {
                 logger.LogError("REG_005: OTP generation failed for {Email}", user.Email);
                 await userManager.DeleteAsync(user);
@@ -121,7 +113,7 @@ public class UserRegistrationService(
             // 8. Enqueue OTP email internally
             var userName = $"{user.FirstName} {user.LastName}".Trim();
             BackgroundJob.Enqueue<EmailJobService>(email =>
-                email.SendOtpAsync(user.Email, otpCode, userName));
+                email.SendOtpAsync(user.Email, otpCode.Data, userName));
             
             // 9. Return response without exposing OTP
             var response = new RegisterResponseDto
@@ -138,7 +130,7 @@ public class UserRegistrationService(
 
     public async Task<ResponseType<string>> VerifyEmailAsync(EmailVerificationRequestDto request)
     {
-        var validationResult = await otpService.ValidateOtpAsync(request.Email, request.VerificationCode);
+        var validationResult = await otpService.VerifyEmailOtpAsync(request.UserId,request.VerificationCode);
         switch (validationResult)
         {
             case OtpValidationResult.Valid:
