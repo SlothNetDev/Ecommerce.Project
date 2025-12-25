@@ -422,7 +422,6 @@ namespace Ecommerce.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("VerifiedAt")
-                        .IsRequired()
                         .HasColumnType("datetime2");
 
                     b.HasKey("EmailOtpId");
@@ -430,6 +429,9 @@ namespace Ecommerce.Infrastructure.Migrations
                     b.HasIndex("CreatedAt");
 
                     b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.HasIndex("UserId", "VerifiedAt");
 
