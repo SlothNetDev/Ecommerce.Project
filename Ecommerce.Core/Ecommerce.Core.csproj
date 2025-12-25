@@ -14,5 +14,12 @@
   <ItemGroup>
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
   </ItemGroup>
+    
+
+  <ItemGroup>
+    <Reference Include="Ecommerce.Infrastructure">
+      <HintPath>..\Ecommerce.Api\bin\Debug\net8.0\Ecommerce.Infrastructure.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 
 </Project>
