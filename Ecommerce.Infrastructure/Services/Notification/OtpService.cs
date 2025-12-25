@@ -92,7 +92,7 @@ public class OtpService(ILogger<OtpService> logger,
             await dbContext.SaveChangesAsync();
             return OtpValidationResult.Invalid;
         }
-        
+        otp.VerifiedAt = DateTime.UtcNow;
         return OtpValidationResult.Valid;
     }
 
