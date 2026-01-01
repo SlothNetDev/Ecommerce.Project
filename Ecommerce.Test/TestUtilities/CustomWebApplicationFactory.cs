@@ -1,6 +1,5 @@
 using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Core.Application.Settings;
-using Ecommerce.Infrastructure.BackgroundJobs;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
 using FluentEmail.Core;
