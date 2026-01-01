@@ -10,6 +10,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <!-- Exclude SQLite database files from being copied to output -->
+      <Content Remove="*.db" />
+      <Content Remove="*.db-*" />
+      <None Include="*.db" CopyToOutputDirectory="Never" />
+      <None Include="*.db-*" CopyToOutputDirectory="Never" />
+    </ItemGroup>
+    <ItemGroup>
       <ProjectReference Include="..\Ecommerce.Infrastructure\Ecommerce.Infrastructure.csproj" />
       <ProjectReference Include="..\Ecommerce.Shared\Ecommerce.Shared.csproj" />
     </ItemGroup>
