@@ -74,6 +74,8 @@ public static class ServiceCollectionExtensions
             )
             .ValidateOnStart();
         
+        //safely delete db files
+        SafeCleanupDatabaseFiles();
         return services;
     }
     
@@ -111,6 +113,37 @@ public static class ServiceCollectionExtensions
                 };
             });
 
+    }
+    
+    public static void SafeCleanupDatabaseFiles()
+    {
+        try
+        {
+            // Ensure all SQLite connections are closed
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        
+            var filesToDelete = new[]
+            {
+                "Ecommerce.db-shm",
+                "Ecommerce.db-wal",
+                "Hangfire.db-shm", 
+                "Hangfire.db-wal"
+            };
+        
+            foreach (var file in filesToDelete)
+            {
+                if (File.Exists(file))
+                {
+                    File.Delete(file);
+                    Console.WriteLine($"Deleted: {file}");
+                }
+            }
+        }
+        catch (IOException ex)
+        {
+            Console.WriteLine($"Files might be in use: {ex.Message}");
+        }
     }
     
 }
