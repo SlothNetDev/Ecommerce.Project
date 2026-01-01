@@ -1,4 +1,5 @@
-﻿using Ecommerce.Core.Application.Common.Interfaces;
+﻿using System.Data.Common;
+using Ecommerce.Core.Application.Common.Interfaces;
 using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Core.Application.Common.Interfaces.Login;
 using Ecommerce.Core.Application.Common.Interfaces.Notification;
@@ -15,8 +16,11 @@ using Ecommerce.Infrastructure.Security;
 using Ecommerce.Infrastructure.Services;
 using Ecommerce.Infrastructure.Services.Notification;
 using Hangfire;
+using Hangfire.Storage.SQLite;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -61,8 +65,10 @@ public static class DependencyInjection
             }
             else
             {
-                Console.WriteLine("Using SQL Server for Production");
-                options.UseSqlServer(configuration.GetConnectionString("EcommerceDbConnection"));
+                Console.WriteLine("Using SQL Lite for Production");
+
+                options.UseSqlite(config.GetConnectionString("EcommerceDbConnection"));
+
             }
         });
     }
@@ -139,14 +145,19 @@ public static class DependencyInjection
         
         if (!env.IsEnvironment("Testing"))
         {
-            var hangfireConnectionString =
-                configuration.GetConnectionString("HangfireDbConnection");
+            var hangfireConnectionString = configuration.GetConnectionString("HangfireDbConnection");
 
             if (!string.IsNullOrWhiteSpace(hangfireConnectionString))
             {
                 service.AddHangfire(config =>
                 {
-                    config.UseSqlServerStorage(hangfireConnectionString);
+                    config.UseSQLiteStorage(hangfireConnectionString, new SQLiteStorageOptions
+                    {
+                        // This ensures the library handles the file correctly for background jobs
+                        QueuePollInterval = TimeSpan.FromSeconds(15),
+                        InvisibilityTimeout = TimeSpan.FromMinutes(5),
+                        JobExpirationCheckInterval = TimeSpan.FromHours(1)
+                    });
                 });
 
                 service.AddHangfireServer();
@@ -154,3 +165,4 @@ public static class DependencyInjection
         }
     }
 }
+
