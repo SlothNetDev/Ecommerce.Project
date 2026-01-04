@@ -8,6 +8,7 @@ using Ecommerce.Infrastructure.Data.Configuration.Review;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 
 namespace Ecommerce.Infrastructure.Data
@@ -15,6 +16,7 @@ namespace Ecommerce.Infrastructure.Data
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>(options)
     {
         public virtual DbSet<ApplicationUser> ApplicationUsersDb { get; set; } = null!;
+        public virtual DbSet<ApplicationRole> ApplicationRolesDb { get; set; } = null!;
         public virtual DbSet<ApplicationToken> RefreshToken { get; set; }
         
         public virtual DbSet<EmailOtp> EmailOtpDb { get; set; } = null!;
@@ -31,8 +33,10 @@ namespace Ecommerce.Infrastructure.Data
             base.OnModelCreating(builder);
 
             #region Authentication
+            builder.ApplyConfigurationsFromAssembly(typeof(ApplicationUserConfiguration).Assembly);
+            builder.ApplyConfigurationsFromAssembly(typeof(ApplicationRoleConfiguration).Assembly);
+            
             builder.ApplyConfigurationsFromAssembly(typeof(EmailOtpConfiguration).Assembly);
-            builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
             builder.ApplyConfigurationsFromAssembly(typeof(ApplicationTokenConfiguration).Assembly);
             builder.ApplyConfigurationsFromAssembly(typeof(RoleHistoryConfiguration).Assembly);
             #endregion
