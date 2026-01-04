@@ -6,6 +6,7 @@ using Ecommerce.Core.Application.Common.Interfaces.Notification;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Core.Application.Common.Interfaces.Security;
 using Ecommerce.Core.Application.Settings;
+using Ecommerce.Infrastructure.Common;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.DevelopmentService.Notification;
 using Ecommerce.Infrastructure.Identity.Entities;
@@ -46,6 +47,7 @@ public static class DependencyInjection
         
         //add hangfire service
         HangFireService(configuration, services);
+        
         return services;
     }
     
@@ -58,6 +60,11 @@ public static class DependencyInjection
 
             Console.WriteLine($"Environment in AddPresentationService: {env.EnvironmentName}");
 
+            var connectionString = SqlitePath.GetConnectionString();
+            
+            Console.WriteLine($"DEBUG: Connection String: {connectionString}");
+            Console.WriteLine($"DEBUG: Environment: {env.EnvironmentName}");
+            
             if (env.IsEnvironment("Testing"))
             {
                 Console.WriteLine("Using InMemoryDatabase for Testing");
@@ -65,10 +72,9 @@ public static class DependencyInjection
             }
             else
             {
-                Console.WriteLine("Using SQL Lite for Production");
-
-                options.UseSqlite(config.GetConnectionString("EcommerceDbConnection"));
-
+                Console.WriteLine("Using SQL Lite for Development");
+                options.UseSqlite(connectionString)
+                    .AddInterceptors(new SqliteWalInterceptor());
             }
         });
     }
@@ -142,27 +148,25 @@ public static class DependencyInjection
     {
         var serviceProvider = service.BuildServiceProvider();
         var env = serviceProvider.GetRequiredService<IHostEnvironment>();
-        
+    
         if (!env.IsEnvironment("Testing"))
         {
-            var hangfireConnectionString = configuration.GetConnectionString("HangfireDbConnection");
+            var hangfireConnectionString = SqlitePath.GetDatabasePath("Hangfire.db");
 
-            if (!string.IsNullOrWhiteSpace(hangfireConnectionString))
-            {
-                service.AddHangfire(config =>
-                {
-                    config.UseSQLiteStorage(hangfireConnectionString, new SQLiteStorageOptions
-                    {
-                        // This ensures the library handles the file correctly for background jobs
-                        QueuePollInterval = TimeSpan.FromSeconds(15),
-                        InvisibilityTimeout = TimeSpan.FromMinutes(5),
-                        JobExpirationCheckInterval = TimeSpan.FromHours(1)
-                    });
-                });
-
-                service.AddHangfireServer();
-            }
+            // Minimal configuration - just the database path
+            service.AddHangfire(config => config.UseSQLiteStorage(hangfireConnectionString));
+            service.AddHangfireServer();
         }
     }
+    class SqliteWalInterceptor : DbConnectionInterceptor
+    {
+        public override void ConnectionOpened(DbConnection connection, ConnectionEndEventData eventData)
+        {
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = "PRAGMA journal_mode=WAL;";
+            cmd.ExecuteNonQuery();
+        }
+    }
+
 }
 
