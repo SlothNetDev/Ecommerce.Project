@@ -162,7 +162,7 @@ public class UserRegistrationService(
 
         // Send welcome email asynchronously
         var userName = $"{user.FirstName} {user.LastName}".Trim();
-        BackgroundJob.Enqueue<IEmailJobService>(email =>
+        BackgroundJob.Enqueue<EmailJobService>(email =>
             email.SendWelcomeAsync(user.Email!, user.UserName!, user.FirstName));
 
         return ResponseType<string>.SuccessResult("Email verified successfully! Your account is now active.");
