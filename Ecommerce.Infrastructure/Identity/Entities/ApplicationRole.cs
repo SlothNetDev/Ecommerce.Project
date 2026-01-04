@@ -13,7 +13,7 @@ namespace Ecommerce.Infrastructure.Identity.Entities
         public string Description { get; set; } = string.Empty;
 
         //used for time stamp
-        public DateTime? CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
     }
 }
