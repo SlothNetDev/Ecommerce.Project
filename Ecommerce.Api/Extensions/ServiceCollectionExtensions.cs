@@ -115,7 +115,7 @@ public static class ServiceCollectionExtensions
 
     }
     
-    public static void SafeCleanupDatabaseFiles()
+    static void SafeCleanupDatabaseFiles(string basePath = null)
     {
         try
         {
@@ -123,26 +123,39 @@ public static class ServiceCollectionExtensions
             GC.Collect();
             GC.WaitForPendingFinalizers();
         
+            // Use provided path or current directory
+            basePath = basePath ?? Directory.GetCurrentDirectory();
+        
             var filesToDelete = new[]
             {
                 "Ecommerce.db-shm",
-                "Ecommerce.db-wal",
-                "Hangfire.db-shm", 
-                "Hangfire.db-wal"
+                "Ecommerce.db-wal", 
+                "Hangfire.db-shm",
+                "Hangfire.db-wal",
+                "*.db-shm",  // Pattern for any SQLite SHM files
+                "*.db-wal"   // Pattern for any SQLite WAL files
             };
         
-            foreach (var file in filesToDelete)
+            foreach (var pattern in filesToDelete)
             {
-                if (File.Exists(file))
+                var files = Directory.GetFiles(basePath, pattern);
+                foreach (var file in files)
                 {
-                    File.Delete(file);
-                    Console.WriteLine($"Deleted: {file}");
+                    try
+                    {
+                        File.Delete(file);
+                        Console.WriteLine($"Deleted: {file}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Could not delete {file}: {ex.Message}");
+                    }
                 }
             }
         }
-        catch (IOException ex)
+        catch (Exception ex)
         {
-            Console.WriteLine($"Files might be in use: {ex.Message}");
+            Console.WriteLine($"Cleanup error: {ex.Message}");
         }
     }
     
