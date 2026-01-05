@@ -2,6 +2,7 @@ using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Core.Application.Common.Interfaces.Login;
 using Ecommerce.Core.Application.Settings;
 using Ecommerce.Infrastructure.Data;
+using Ecommerce.Infrastructure.Data.Seeders;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Shared.AuthenticationDTO;
 using Ecommerce.Shared.Enums;
@@ -15,11 +16,13 @@ namespace Ecommerce.Infrastructure.Identity.Services.Login;
 
 public class AuthenticationService(
     UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager,
     ITokenService tokenService,
     ILogger<AuthenticationService>  logger,
     ApplicationDbContext dbContext,
     IRefreshTokenService refreshToken,
-    IIpAdressService ipAdressService) : IAuthenticationService
+    IIpAdressService ipAdressService,
+    IOptions<JwtSettings> jwtSettings) : IAuthenticationService
 {
     public async Task<ResponseType<AuthenticationResponseDto>> LoginAsync(LoginRequestDto request)
     {
@@ -36,9 +39,9 @@ public class AuthenticationService(
         }
         
         //2. check if password correct
-        var passwordValid = await userManager.CheckPasswordAsync(user, request.Password);
+        var result = await signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
 
-        if (!passwordValid)
+        if (!result.Succeeded)
         {
             logger.LogWarning("LOG_003: Invalid password attempt for user {UserId} (Email: {Email})",
                 user.Id, request.Email);
@@ -48,12 +51,31 @@ public class AuthenticationService(
                 "Login failed. Invalid email or password."
             );
         }
+
+        if (result.IsLockedOut)
+        {
+            logger.LogWarning("LOG_004: User {UserId} is locked out", user.Id);
+            return ResponseType<AuthenticationResponseDto>.Fail(
+                "AccountLocked",
+                FailureType.Authentication, 
+                "Account locked due to too many attempts. Please try again in 5 minutes."
+            );
+        }
+        
+        //3. check if email was confirmed and valid
+        var isValidEmail =  await userManager.IsEmailConfirmedAsync(user);
+        if (!isValidEmail)
+        {
+            logger.LogWarning("LOG_004: Email: {Email} not confirmed", request.Email);
+            return ResponseType<AuthenticationResponseDto>.Fail("Email was not Verified yet",
+                FailureType.Authentication);
+        }
         
         //3. get the roles Assigned to the user
         var roles = await userManager.GetRolesAsync(user);
         
         //4. assigning role as default which is costumer
-        var userRole = roles.FirstOrDefault() ?? "Costumer"; //if no roles found, default role as Costumer
+        var userRole = roles.FirstOrDefault() ?? RoleSeeder.Customer; //if no roles found, default role as Costumer
         
         //5. create  token for user
         var tokenUser = new TokenUserDto(
@@ -64,7 +86,6 @@ public class AuthenticationService(
         
         //6. Generate JWT token claims and create token
         var claims = tokenService.BuildClaims(tokenUser); // create claims
-        var jwtToken = tokenService.CreateJwtToken(claims); // make it token
 
         //7. Get client IP for refresh token
         var ipAdress = ipAdressService.GetClientIpAddress();
@@ -82,18 +103,15 @@ public class AuthenticationService(
                 refreshTokenResult.Message);
         }
         
-        //8. Calculate  expiration date of token
-        var expirationTime = DateTime.UtcNow.AddMinutes(15);
-        
         return ResponseType<AuthenticationResponseDto>.SuccessResult(new AuthenticationResponseDto()
             {
                 UserName = user.UserName,
                 Role = userRole,
-                BearerToken = jwtToken,
+                BearerToken = tokenService.CreateJwtToken(claims), // make it token
                 RefreshToken = refreshTokenResult.Data!.Token,
-                ExpiresAt = expirationTime
+                ExpiresAt = DateTime.UtcNow.AddMinutes(jwtSettings.Value.AccessTokenExpiryMinutes)
             },
-            "Login Sucessfully");
+            "Login Successful");
 
     }
 
