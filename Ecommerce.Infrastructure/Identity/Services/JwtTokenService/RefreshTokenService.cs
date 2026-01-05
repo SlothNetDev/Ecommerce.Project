@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
+using Ecommerce.Core.Application.Settings;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Shared.Enums;
@@ -7,12 +8,14 @@ using Ecommerce.Shared.TokenDTO;
 using Ecommerce.Shared.Wrapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Ecommerce.Infrastructure.Identity.Services.JwtTokenService;
 
 public class RefreshTokenService(ApplicationDbContext dbContext,
     ILogger<RefreshTokenService> logger,
-    IIpAdressService ipAddressService) :IRefreshTokenService
+    IIpAdressService ipAddressService,
+    IOptions<JwtSettings> jwtSettings) :IRefreshTokenService
 {
     public async Task<ResponseType<RefreshTokenResponseDto>> GenerateRefreshTokenAsync(
         string userId, 
@@ -39,7 +42,7 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
             UserId = Guid.Parse(userId),
             Created = DateTime.UtcNow,
             CreatedByIp = clientIp,
-            Expires = DateTime.UtcNow.AddDays(7),
+            Expires = DateTime.UtcNow.AddDays(jwtSettings.Value.RefreshTokenExpiryDays)
         };
 
         await dbContext.RefreshToken.AddAsync(token);
