@@ -42,7 +42,7 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
             UserId = Guid.Parse(userId),
             Created = DateTime.UtcNow,
             CreatedByIp = clientIp,
-            Expires = DateTime.UtcNow.AddDays(jwtSettings.Value.RefreshTokenExpiryDays)
+            Expires = DateTime.UtcNow.AddMinutes(jwtSettings.Value.AccessTokenExpiryMinutes)
         };
 
         await dbContext.RefreshToken.AddAsync(token);
@@ -75,29 +75,29 @@ public class RefreshTokenService(ApplicationDbContext dbContext,
     public async Task<ResponseType<string>> RevokeRefreshTokenAsync(
         string token, 
         string ipAddress, 
-        string reason)
+        string? reason)
     {
         // 1. Get validated IP address
         var clientIp = ipAddressService.GetClientIpAddress();
         
-        var entity = await dbContext.RefreshToken
+        var storedToken = await dbContext.RefreshToken
             .FirstOrDefaultAsync(x => x.Token == token);
 
-        if (entity == null)
+        if (storedToken is null)
             return ResponseType<string>.Fail("Token not found",
                 FailureType.Authentication);
 
-        if (entity.Revoked.HasValue)
+        if (storedToken.Revoked.HasValue)
             return ResponseType<string>.SuccessResult("Already revoked", "Token already revoked");
 
-        entity.Revoked = DateTime.UtcNow;
-        entity.RevokedByIp = clientIp; 
-        entity.RevocationReason = reason;
+        storedToken.Revoked = DateTime.UtcNow;
+        storedToken.RevokedByIp = clientIp; 
+        storedToken.RevocationReason = reason;
 
         await dbContext.SaveChangesAsync();
         
         logger.LogInformation("Token revoked: {TokenId}, Reason: {Reason}, IP: {IP}", 
-            entity.TokenId, reason, clientIp);
+            storedToken.TokenId, reason, clientIp);
             
         return ResponseType<string>.SuccessResult("Revoked", "Token revoked");
     }
