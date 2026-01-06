@@ -28,5 +28,14 @@ public interface IAuthenticationService
     /// <returns>
     /// Returns a response indicating the success or failure of the logout operation.
     /// </returns>
-    Task<ResponseType<string>> LogoutAsync(string userId);
+    Task<ResponseType<string>> LogoutAsync(string userId, string reason);
+
+    /// <summary>
+    /// Log out all token that a specified user had, across all platform
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="currentToken"></param>
+    /// <param name="reason"></param>
+    /// <returns>Return a response indicating all token was successfully revoked</returns>
+    Task<ResponseType<string>> RevokeAllOtherSessionsAsync(string userId,string currentToken, string reason);
 }
