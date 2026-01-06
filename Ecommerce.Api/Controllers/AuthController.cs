@@ -38,16 +38,19 @@ public class AuthController(
     /// Log out your Account by providing the valid refresh Token
     /// </summary>
     /// <param name="token"></param>
+    /// <param name="reason"></param>
     /// <returns></returns>
     [HttpPost("logout")]
-    public async Task<IActionResult> LogOutAsync([FromQuery] string token)
+    public async Task<IActionResult> LogOutAsync([FromQuery] string token, string? reason)
     {
-        var response = await authenticationService.LogoutAsync(token);
+        var response = await authenticationService.LogoutAsync(token, reason);
         logger.LogInformation(
             response.Success?"User Token {token} logged out successfully":
                 "User failed to logout");
         return Ok(response);
     }
+    
+    
     #endregion
 
     #region Refresh token
