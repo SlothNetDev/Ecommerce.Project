@@ -9,6 +9,7 @@ using Ecommerce.Shared.Enums;
 using Ecommerce.Shared.TokenDTO;
 using Ecommerce.Shared.Wrapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -115,29 +116,70 @@ public class AuthenticationService(
 
     }
 
-    public async Task<ResponseType<string>> LogoutAsync(string refreshTokenId)
+    public async Task<ResponseType<string>> LogoutAsync(string refreshTokenId, string? reason)
     {
+        //1. Validate refresh token 
         if (string.IsNullOrWhiteSpace(refreshTokenId))
         {
             logger.LogInformation("refresh Token cannot be empty");
             return ResponseType<string>.Fail("Refresh Token cannot be Empty",
                 FailureType.Validation);
         }
-        //check if refresh token exist
-        var isValid =  await refreshToken.IsRefreshTokenValidAsync(refreshTokenId);
-        if (!isValid)
+        //2. find and stored on db
+        var storedToken = await dbContext.RefreshToken
+            .FirstOrDefaultAsync(x => x.TokenId == refreshTokenId);
+
+        if (storedToken is null)
         {
-            return ResponseType<string>.Fail("Refresh Token is Invalid",
+            logger.LogInformation("refresh Token not found");
+            return  ResponseType<string>.Fail("Refresh Token not found",
                 FailureType.Validation);
+        }
+        
+        //3. if it's already revoked, just return success (Idempotent service)
+        if (!storedToken.IsActive)
+        {
+            logger.LogInformation("Token is not active");
+            return ResponseType<string>.SuccessResult("Session already ended");
         }
         //get ip adress
         var ipAdress = ipAdressService.GetClientIpAddress();
         
         //get the 
         //break the refresh token
-        await refreshToken.RevokeRefreshTokenAsync(refreshTokenId, ipAdress, null);
+        await refreshToken.RevokeRefreshTokenAsync(refreshTokenId, ipAdress, reason ?? string.Empty);
         
         await dbContext.SaveChangesAsync();
         return ResponseType<string>.SuccessResult("Logout Successfully");
+    }
+
+    public async Task<ResponseType<string>> RevokeAllOtherSessionsAsync(string userId, string currentToken, string reason)
+    {
+        // 1. Find all active tokens for THIS specific user, 
+        // EXCEPT the one they are currently using.
+        var otherTokens = await dbContext.RefreshToken
+            .Where(t => t.UserId == Guid.Parse(userId) 
+                        && t.Token != currentToken 
+                        && t.IsActive)
+            .ToListAsync();
+
+        if (!otherTokens.Any())
+        {
+            return ResponseType<string>.SuccessResult("No other active sessions found.");
+        }
+
+        var ipAddress = ipAdressService.GetClientIpAddress();
+    
+        // 2. Batch revoke
+        foreach (var token in otherTokens)
+        {
+            token.Revoked = DateTime.UtcNow;
+            token.RevokedByIp = ipAddress;
+            token.RevocationReason = "Revoked via 'Logout Other Devices'";
+        }
+
+        await dbContext.SaveChangesAsync();
+    
+        return ResponseType<string>.SuccessResult($"Logged out of {otherTokens.Count} other devices.");
     }
 }
