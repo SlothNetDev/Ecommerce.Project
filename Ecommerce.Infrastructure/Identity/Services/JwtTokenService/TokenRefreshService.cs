@@ -1,6 +1,7 @@
 using Ecommerce.Core.Application.Common.Interfaces;
 using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
+using Ecommerce.Core.Application.Settings;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
 using Ecommerce.Shared.Enums;
@@ -9,6 +10,7 @@ using Ecommerce.Shared.Wrapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Ecommerce.Infrastructure.Identity.Services.JwtTokenService;
 
@@ -18,7 +20,8 @@ public class TokenRefreshService(
     ITokenService tokenService,
     UserManager<ApplicationUser> userManager,
     ApplicationDbContext dbContext,
-    ILogger<TokenRefreshService> logger) : ITokenRefreshService
+    ILogger<TokenRefreshService> logger,
+    IOptions<JwtSettings> jwtSettings) : ITokenRefreshService
 {
     public async Task<ResponseType<TokenResponseDto>> RefreshTokenAsync(RefreshTokenRequestDto request)
     {
@@ -47,6 +50,7 @@ public class TokenRefreshService(
         //3. Perform the enhanced Validation with IP address 
         var validationResult = await refreshTokenService
             .ValidateRefreshTokenWithIpCheckAsync(request.RefreshToken);
+        
         if (!validationResult.Success)
         {
             logger.LogWarning("Refresh token validation failed: {Token}, IP: {IP}, Reason: {Reason}", 
@@ -150,7 +154,8 @@ public class TokenRefreshService(
         var tokenResponse = new TokenResponseDto(
             newAccessToken,
             rotationToken.Data!.Token,
-            DateTime.UtcNow.AddMinutes(15));
+            ExpiresAt: DateTime.UtcNow.AddMinutes(jwtSettings.Value.RefreshTokenExpiryDays)
+        );
         
         logger.LogInformation("Token refreshed for user: {UserId}", storedToken.UserId);
         
