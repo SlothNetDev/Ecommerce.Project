@@ -71,8 +71,6 @@ public class UserRegistrationService(
                 AccessFailedCount = 0
             };
             
-            /*var key = Environment.GetEnvironmentVariable("RESEND_API_KEY");
-            logger.LogInformation("Resend API Key Loaded: {Loaded}", !string.IsNullOrEmpty(key));*/
             
             //5. create the user in the database 
             var createResult = await userManager.CreateAsync(user, request.Password);
