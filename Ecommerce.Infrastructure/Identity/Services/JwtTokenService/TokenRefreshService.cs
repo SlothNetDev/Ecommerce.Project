@@ -116,7 +116,7 @@ public class TokenRefreshService(
                 storedToken.User.Email, 
                 currentIp);
             
-            return ResponseType<TokenResponseDto>.Fail(
+            return ResponseType<TokenResponseDto>.Fail( 
                 "Refresh Token Rotation Failed",
                 FailureType.Authentication, 
                 rotationToken.Message);
