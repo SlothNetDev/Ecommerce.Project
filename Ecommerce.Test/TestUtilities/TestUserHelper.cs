@@ -51,7 +51,7 @@ public class TestUserHelper
             issuer: jwtSettings.Issuer,
             audience: jwtSettings.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(jwtSettings.ExpiryMinutes),
+            expires: DateTime.UtcNow.AddMinutes(jwtSettings.AccessTokenExpiryMinutes),
             signingCredentials: creds
         );
 
