@@ -1,7 +1,9 @@
 using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
+using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Core.Application.Settings;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Identity.Entities;
+using Ecommerce.Infrastructure.Services.Notification;
 using FluentEmail.Core;
 using FluentEmail.Core.Interfaces;
 using FluentEmail.Core.Models;
@@ -15,6 +17,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Resend;
 
 namespace Ecommerce.Test.TestUtilities;
 
@@ -54,29 +58,26 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
                 });
             });
             
-            builder.ConfigureServices(services =>
-            {
-                /*// Replace the real sender so tests never hit SendGrid
-                services.RemoveAll<ISender>();
-                services.AddSingleton<ISender, NoOpEmailSender>();
-                services.RemoveAll<IBackgroundJobService>();
-                services.AddSingleton<IBackgroundJobService, FakeBackgroundJobService>();*/
-
-            });
-            // 3. Add Test JWT settings
+            // 4. Add Test JWT settings
             services.Configure<JwtSettings>(options =>
             {
                 options.Key = "TEST_KEY_256BIT_LONG_ABCDEFG1234567890";
                 options.Issuer = "Ecommerce.Test";
                 options.Audience = "Ecommerce.Test.Users";
-                options.ExpiryMinutes = 60;
+                options.AccessTokenExpiryMinutes = 60;
             });
 
+            services.Configure<SecurityKeySettings>(options =>
+            {
+                options.SecurityKey = "SecurityBoy";
+            });
             services.AddSingleton(sp =>
                 sp.GetRequiredService<IOptions<JwtSettings>>().Value);
 
-            // 4. Override IP address service for testing
+            // 5. Override IP address service for testing
             services.AddScoped<IIpAdressService, TestIpAddressService>();
+            
+            services.AddScoped<IOtpService, OtpService>();
         });
 
         builder.ConfigureAppConfiguration((context, config) =>
