@@ -10,16 +10,11 @@ namespace Ecommerce.Test;
 /// HTTP Client: Provides both unauthorized and authorized clients                                        
 /// CreateAuthorizedClient(): Easy method to get pre-authenticated clients
 /// </summary>
-public class TestBase : IClassFixture<CustomWebApplicationFactory<Program>>
+public class TestBase(CustomWebApplicationFactory<Program> factory)
+    : IClassFixture<CustomWebApplicationFactory<Program>>
 {
-    protected readonly CustomWebApplicationFactory<Program> _factory;
-    protected readonly HttpClient _client;
-
-    public TestBase(CustomWebApplicationFactory<Program> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    protected readonly CustomWebApplicationFactory<Program> _factory = factory;
+    protected readonly HttpClient _client = factory.CreateClient();
 
     public HttpClient CreateAuthorizedClient(string email)
     {
