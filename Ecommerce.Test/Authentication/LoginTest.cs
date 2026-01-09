@@ -34,7 +34,8 @@ public class LoginTest : TestBase
     private readonly AssertApiHelper _assert;
     private readonly ITestOutputHelper _output;
 
-    public LoginTest(CustomWebApplicationFactory<Program> factory, ITestOutputHelper output) : base(factory)
+    public LoginTest(CustomWebApplicationFactory<Program> factory, ITestOutputHelper output) 
+        : base(factory)
     {
         _client = factory.CreateClient();
         _assert = new AssertApiHelper(output);
