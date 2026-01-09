@@ -70,6 +70,7 @@ public class OtpService(ILogger<OtpService> logger,
         
         if(otp is null)
             return OtpValidationResult.NotFound;
+        
 
         if (otp.IsExpired || !otp.IsActive)
         {
