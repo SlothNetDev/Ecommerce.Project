@@ -53,6 +53,9 @@ public static class ApplicationBuilderExtensions
 
         //adding global middleware
         app.UseMiddleware<MiddlewareException>();
+        
+        //adding token blacklist middleware
+        app.UseMiddleware<TokenBlacklistMiddleware>();
 
         app.UseAuthentication(); // Note: This should come BEFORE UseAuthorization
         app.UseAuthorization();
