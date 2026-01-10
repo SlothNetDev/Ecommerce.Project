@@ -3,7 +3,7 @@
 public interface ITokenBlacklistService
 {
     /// <summary>
-    /// 
+    /// Create a way to block or revoked user claims
     /// </summary>
     /// <param name="jti"></param>
     /// <param name="expiresIn"></param>
