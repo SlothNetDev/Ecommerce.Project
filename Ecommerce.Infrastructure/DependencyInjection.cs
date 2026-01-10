@@ -6,7 +6,6 @@ using Ecommerce.Core.Application.Common.Interfaces.Notification;
 using Ecommerce.Core.Application.Common.Interfaces.Register;
 using Ecommerce.Core.Application.Common.Interfaces.Security;
 using Ecommerce.Core.Application.Settings;
-using Ecommerce.Infrastructure.Common;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.DevelopmentService.Notification;
 using Ecommerce.Infrastructure.Identity.Entities;
@@ -60,7 +59,7 @@ public static class DependencyInjection
 
             Console.WriteLine($"Environment in AddPresentationService: {env.EnvironmentName}");
 
-            var connectionString = SqlitePath.GetConnectionString();
+            var connectionString = configuration.GetConnectionString("EcommerceDbConnection");
             
             Console.WriteLine($"DEBUG: Connection String: {connectionString}");
             Console.WriteLine($"DEBUG: Environment: {env.EnvironmentName}");
@@ -73,8 +72,7 @@ public static class DependencyInjection
             else
             {
                 Console.WriteLine("Using SQL Lite for Development");
-                options.UseSqlite(connectionString)
-                    .AddInterceptors(new SqliteWalInterceptor());
+                options.UseSqlServer(connectionString);
             }
         });
     }
@@ -152,22 +150,12 @@ public static class DependencyInjection
     
         if (!env.IsEnvironment("Testing"))
         {
-            var hangfireConnectionString = SqlitePath.GetDatabasePath("Hangfire.db");
+            var hangfireConnectionString = configuration.GetConnectionString("HangfireDbConnection");
 
             // Minimal configuration - just the database path
-            service.AddHangfire(config => config.UseSQLiteStorage(hangfireConnectionString));
+            service.AddHangfire(config => config.UseSqlServerStorage(hangfireConnectionString));
             service.AddHangfireServer();
         }
     }
-    class SqliteWalInterceptor : DbConnectionInterceptor
-    {
-        public override void ConnectionOpened(DbConnection connection, ConnectionEndEventData eventData)
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "PRAGMA journal_mode=WAL;";
-            cmd.ExecuteNonQuery();
-        }
-    }
-
 }
 
