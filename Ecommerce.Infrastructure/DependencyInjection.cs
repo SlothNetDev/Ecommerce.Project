@@ -102,9 +102,9 @@ public static class DependencyInjection
     private static void IocContainer(IServiceCollection service)
     {
         //JWT token
-        service.AddScoped<ITokenService, TokenService>();
-        service.AddScoped<IRefreshTokenService, RefreshTokenService>();
-        service.AddScoped<ITokenRefreshService, TokenRefreshService>();
+        service.AddScoped<IGenerateTokenService, GenerateTokenService>();
+        service.AddScoped<IRefreshTokenServiceHelper, IRefreshTokenServiceHelperHelper>();
+        service.AddScoped<IRefreshRotateTokenService, RotateRefreshRotateTokenService>();
         service.AddScoped<IIpAdressService, IpAddressService>();
 
         //Authentication and user management
@@ -116,6 +116,7 @@ public static class DependencyInjection
         
         //Security
         service.AddScoped<IHashService, HmacHashService>();
+        service.AddSingleton<ITokenBlacklistService, TokenBlacklistService>();
         
         //roles
         service.AddScoped<IRoleManagementService, RoleManagerService>();
