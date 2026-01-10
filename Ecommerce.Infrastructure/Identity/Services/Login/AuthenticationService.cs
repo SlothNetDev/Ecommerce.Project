@@ -1,5 +1,6 @@
 using Ecommerce.Core.Application.Common.Interfaces.JwtToken;
 using Ecommerce.Core.Application.Common.Interfaces.Login;
+using Ecommerce.Core.Application.Common.Interfaces.Security;
 using Ecommerce.Core.Application.Settings;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Data.Seeders;
@@ -18,12 +19,13 @@ namespace Ecommerce.Infrastructure.Identity.Services.Login;
 public class AuthenticationService(
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
-    ITokenService tokenService,
+    IGenerateTokenService generateTokenService,
     ILogger<AuthenticationService>  logger,
     ApplicationDbContext dbContext,
-    IRefreshTokenService refreshToken,
+    IRefreshTokenServiceHelper iRefreshToken,
     IIpAdressService ipAdressService,
-    IOptions<JwtSettings> jwtSettings) : IAuthenticationService
+    IOptions<JwtSettings> jwtSettings,
+    ITokenBlacklistService blacklistService) : IAuthenticationService
 {
     public async Task<ResponseType<AuthenticationResponseDto>> LoginAsync(LoginRequestDto request)
     {
@@ -86,13 +88,13 @@ public class AuthenticationService(
             roles.ToList());
         
         //6. Generate JWT token claims and create token
-        var claims = tokenService.BuildClaims(tokenUser); // create claims
+        var claims = generateTokenService.BuildClaims(tokenUser); // create claims
 
         //7. Get client IP for refresh token
         var ipAdress = ipAdressService.GetClientIpAddress();
         
         //8. Generate refresh Token
-        var refreshTokenResult = await refreshToken.GenerateRefreshTokenAsync(tokenUser.UserId,
+        var refreshTokenResult = await iRefreshToken.GenerateRefreshTokenAsync(tokenUser.UserId,
             ipAdress);
 
         if (!refreshTokenResult.Success)
@@ -108,7 +110,7 @@ public class AuthenticationService(
             {
                 UserName = user.UserName,
                 Role = userRole,
-                BearerToken = tokenService.CreateJwtToken(claims), // make it token
+                BearerToken = generateTokenService.CreateJwtToken(claims), // make it token
                 RefreshToken = refreshTokenResult.Data!.Token,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(jwtSettings.Value.AccessTokenExpiryMinutes)
             },
@@ -147,7 +149,7 @@ public class AuthenticationService(
         
         //get the 
         //break the refresh token
-        await refreshToken.RevokeRefreshTokenAsync(refreshTokenId, ipAdress, reason ?? string.Empty);
+        await iRefreshToken.RevokeRefreshTokenAsync(refreshTokenId, ipAdress, reason ?? string.Empty);
         
         await dbContext.SaveChangesAsync();
         return ResponseType<string>.SuccessResult("Logout Successfully");
@@ -175,7 +177,14 @@ public class AuthenticationService(
         {
             token.Revoked = DateTime.UtcNow;
             token.RevokedByIp = ipAddress;
-            token.RevocationReason = "Revoked via 'Logout Other Devices'";
+            token.RevocationReason = reason;
+
+            //Calculate how long until this token will have to expire anyway
+            var timeRemaining = token.Expires - DateTime.UtcNow;
+            if (timeRemaining > TimeSpan.Zero)
+            {
+                await blacklistService.BlackListTokenAsync(token.TokenId,timeRemaining);
+            }
         }
 
         await dbContext.SaveChangesAsync();
