@@ -1,5 +1,4 @@
-﻿using Ecommerce.Infrastructure.Common;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
@@ -11,19 +10,18 @@ namespace Ecommerce.Infrastructure.Data
         {
             var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory()) 
-                .AddUserSecrets<ApplicationDbContext>() // for development
+                .AddUserSecrets<ApplicationDbContextFactory>() // for development
                 .Build();
 
-            var connectionString = SqlitePath.GetConnectionString();
-            Console.WriteLine($"Sqlite connection string: {connectionString}");
-            
+            var connectionString = config.GetConnectionString("EcommerceDbConnection");
+
             if (string.IsNullOrEmpty(connectionString))
             {
                 throw new InvalidOperationException("Could not find connection string 'EcommerceDbConnection'");
             }
 
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-            optionsBuilder.UseSqlite(connectionString);
+            optionsBuilder.UseSqlServer(connectionString);
 
             return new ApplicationDbContext(optionsBuilder.Options);
         }
