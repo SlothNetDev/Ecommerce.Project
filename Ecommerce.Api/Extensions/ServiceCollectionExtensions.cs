@@ -76,6 +76,9 @@ public static class ServiceCollectionExtensions
         
         //safely delete db files
         SafeCleanupDatabaseFiles();
+        
+        //Add ImemoryCache
+        services.AddMemoryCache();
         return services;
     }
     
