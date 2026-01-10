@@ -23,14 +23,14 @@ namespace Ecommerce.Test.Authentication;
 /// </summary>
 public class RefreshTokenTest :  TestBase 
 {
-    private readonly IRefreshTokenService _refreshTokenService;
+    private readonly IRefreshTokenServiceHelper _iRefreshTokenServiceHelper;
     private readonly AssertApiHelper _assert;
     private const string RefreshEndpoint = "api/dashboard/refresh";
     private readonly ITestOutputHelper _output;
 
     public RefreshTokenTest(CustomWebApplicationFactory<Program> factory, ITestOutputHelper output) : base(factory)
     {
-        _refreshTokenService = factory.Services.GetRequiredService<IRefreshTokenService>();
+        _iRefreshTokenServiceHelper = factory.Services.GetRequiredService<IRefreshTokenServiceHelper>();
         _assert = new AssertApiHelper(output);
         _output = output;
         
@@ -75,7 +75,7 @@ public class RefreshTokenTest :  TestBase
         // STEP 3: Generate initial refresh token
         // ============================================================
         var ip = "127.0.0.1";
-        var refreshService = _factory.Services.GetRequiredService<IRefreshTokenService>();
+        var refreshService = _factory.Services.GetRequiredService<IRefreshTokenServiceHelper>();
         var oldTokenResult = await refreshService.GenerateRefreshTokenAsync(refreshUser.Id.ToString(), ip);
         
         Assert.True(oldTokenResult.Success, "Failed to generate refresh token");
@@ -134,7 +134,7 @@ public class RefreshTokenTest :  TestBase
         // STEP 1: Setup - Create test user and initial refresh token
         // ============================================================
         var userManager = _factory.Services.GetRequiredService<UserManager<ApplicationUser>>();
-        var refreshTokenService = _factory.Services.GetRequiredService<IRefreshTokenService>();
+        var refreshTokenService = _factory.Services.GetRequiredService<IRefreshTokenServiceHelper>();
         var refreshUser = await userManager.FindByEmailAsync("invalidateold@test.com");
 
         if (refreshUser == null)
@@ -208,7 +208,7 @@ public class RefreshTokenTest :  TestBase
         // STEP 1: Setup - Create test user
         // ============================================================
         var userManager = _factory.Services.GetRequiredService<UserManager<ApplicationUser>>();
-        var refreshTokenService = _factory.Services.GetRequiredService<IRefreshTokenService>();
+        var refreshTokenService = _factory.Services.GetRequiredService<IRefreshTokenServiceHelper>();
         var dbContext = _factory.Services.GetRequiredService<ApplicationDbContext>();
 
         var refreshUser = await userManager.FindByEmailAsync("expired@test.com");
@@ -313,7 +313,7 @@ public class RefreshTokenTest :  TestBase
         // STEP 1: Setup - Create two separate users
         // ============================================================
         var userManager = _factory.Services.GetRequiredService<UserManager<ApplicationUser>>();
-        var refreshTokenService = _factory.Services.GetRequiredService<IRefreshTokenService>();
+        var refreshTokenService = _factory.Services.GetRequiredService<IRefreshTokenServiceHelper>();
 
         // Create User 1
         var user1 = await userManager.FindByEmailAsync("user1@test.com");
@@ -412,7 +412,7 @@ public class RefreshTokenTest :  TestBase
         // STEP 1: Setup - Create test user and initial refresh token
         // ============================================================
         var userManager = _factory.Services.GetRequiredService<UserManager<ApplicationUser>>();
-        var refreshTokenService = _factory.Services.GetRequiredService<IRefreshTokenService>();
+        var refreshTokenService = _factory.Services.GetRequiredService<IRefreshTokenServiceHelper>();
 
         var replayUser = await userManager.FindByEmailAsync("replay@test.com");
 
@@ -486,7 +486,7 @@ public class RefreshTokenTest :  TestBase
         // STEP 1: Setup - Create test user
         // ============================================================
         var userManager = _factory.Services.GetRequiredService<UserManager<ApplicationUser>>();
-        var refreshTokenService = _factory.Services.GetRequiredService<IRefreshTokenService>();
+        var refreshTokenService = _factory.Services.GetRequiredService<IRefreshTokenServiceHelper>();
 
         var revokedUser = await userManager.FindByEmailAsync("revoked@test.com");
 
