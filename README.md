@@ -59,7 +59,3 @@ If there are test projects in the solution, run them with:
 ## Contributing
 
 Contributions are welcome. Please open issues or pull requests and include a short description of the change.
-
-## License
-
-No license is specified. Add a LICENSE file if you want to provide one.
